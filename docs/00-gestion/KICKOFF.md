@@ -146,7 +146,7 @@ defecto: si nadie presenta un argumento nuevo, se adopta tal cual.
 | D1 | Versión de Java y Spring | Boot 4.0.9, Quarkus | **Java 21 + Spring Boot 3.5.16** (ecosistema y springdoc estables) | Todos | ☐ |
 | D2 | Estructura del repositorio | 13 repos, submódulos | **Monorepo** con POM padre y `services/` | C | ☐ |
 | D3 | Estrategia de nube | AWS desde el día 1, solo local | **Local-first**: Compose + LocalStack; AWS después | Todos | ☐ |
-| D4 | Base de datos operacional | DynamoDB, MongoDB | **PostgreSQL 16**, una base por servicio + `keycloak_db` | C | ☐ |
+| D4 | Base de datos operacional | DynamoDB, MongoDB | **PostgreSQL 16**, una base por servicio + `keycloak_db`; igual en local (contenedor) y en AWS (RDS) | C | ☐ |
 | D5 | Topología RDS | 1 instancia, 13 instancias, Aurora | **Dos instancias** (operacional y analítica) con plan B de una | C | ☐ |
 | D6 | Mensajería | Kafka/MSK, RabbitMQ, SNS | **EventBridge + SQS + DLQ + outbox** | Todos | ☐ |
 | D7 | Capa analítica | Batch + Lambda, Redshift, Athena | **Kappa + Medallón** en S3, un bucket con `raw/trusted/curated` | C | ☐ |

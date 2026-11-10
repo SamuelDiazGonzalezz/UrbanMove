@@ -31,6 +31,24 @@ El enunciado menciona DynamoDB como ampliación valorable, pero no lo exige.
   consume el dashboard.
 - **DynamoDB** queda como ampliación opcional, no como parte del núcleo.
 
+### 2.1. Esta decisión no depende del entorno
+
+La comparación **no es local frente a nube**. Es qué motor se usa para los datos
+operacionales. El motor es el mismo en los dos entornos; solo cambia quién lo aloja.
+
+| Entorno | Datos operacionales | Data Lake | DynamoDB |
+|---|---|---|---|
+| **Local** | Contenedor `postgres:16` con las 14 bases | LocalStack (S3 emulado) | No se usa; si se probara, LocalStack |
+| **AWS** | RDS PostgreSQL (dos instancias o plan B) | S3 real | Solo ampliación opcional de telemetría |
+
+Consecuencia práctica: el código no cambia entre local y AWS. Solo cambia la variable de
+conexión (`DB_HOST`, `DB_URL`). Por eso la decisión se toma una vez y vale para los dos
+entornos.
+
+Lo que sí es una decisión de nube es **dónde se aloja PostgreSQL** (ADR 0006: dos
+instancias RDS con plan B) y **cuándo se despliega** (ADR 0001: local primero, AWS
+después).
+
 ## Alternativas consideradas
 
 ### A. DynamoDB para todo
