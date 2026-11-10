@@ -173,7 +173,7 @@ flowchart LR
 |---|---|
 | API Gateway / Nginx | Punto de entrada, TLS, rate limit, CORS, validación de JWT |
 | Keycloak / Cognito | Login, tokens, roles |
-| PostgreSQL operacional | Datos transaccionales, una base de datos por servicio (12 bases) |
+| PostgreSQL operacional | Datos transaccionales, una base de datos por servicio (12 bases) + `keycloak_db` |
 | PostgreSQL analítico | Data marts para el dashboard (`analytics_db`) |
 | EventBridge | Bus de eventos de dominio |
 | SQS + DLQ | Desacoplo, buffer, reintentos y mensajes fallidos |
@@ -365,7 +365,7 @@ consulta y la completa.
 ### 10.1. Local (por defecto)
 
 - Docker Compose.
-- Un contenedor PostgreSQL con las 13 bases (equivalente al plan B de AWS).
+- Un contenedor PostgreSQL con las 14 bases (equivalente al plan B de AWS).
 - LocalStack, Keycloak, Grafana y Prometheus.
 - Servicios Spring Boot con perfil `local`.
 - Lambdas ejecutadas contra LocalStack.
@@ -377,7 +377,7 @@ consulta y la completa.
 - S3, SQS, EventBridge, Lambda y CloudWatch reales.
 - Keycloak en la EC2 o Cognito.
 - **Dos instancias RDS** (operacional y analítica) como objetivo. Si la cuenta o el
-  crédito no lo permiten, una sola instancia con las 13 bases o PostgreSQL en la EC2.
+  crédito no lo permiten, una sola instancia con las 14 bases o PostgreSQL en la EC2.
 - Recursos creados con Terraform cuando sea posible.
 
 ### 10.3. AWS real (opcional)

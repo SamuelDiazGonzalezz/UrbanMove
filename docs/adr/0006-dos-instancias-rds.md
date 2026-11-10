@@ -23,21 +23,22 @@ si el crédito alcanzará para mantenerlas durante la demo.
 
 Se adoptan **dos instancias RDS PostgreSQL**:
 
-- `urbanmove-operational`: 12 bases operacionales, una por microservicio de negocio.
+- `urbanmove-operational`: 12 bases operacionales, una por microservicio de negocio, más
+  `keycloak_db` (base de infraestructura del proveedor de identidad).
 - `urbanmove-analytics`: `analytics_db`, con los data marts y un usuario de solo lectura
   para Grafana.
 
 La separación es **física** (dos instancias) además de lógica (cada servicio con su base
 y su usuario).
 
-Se establece un **plan B oficial**: colapsar a una sola instancia con las 13 bases si la
+Se establece un **plan B oficial**: colapsar a una sola instancia con las 14 bases si la
 integración en AWS o el crédito se complican. El cambio afecta únicamente a la variable
 `DB_HOST` de `analytics` y de la Lambda `mart-builder`; no requiere modificar código ni
 contratos.
 
 ## Alternativas consideradas
 
-### A. Una sola instancia con 13 bases
+### A. Una sola instancia con 14 bases
 
 - **Ventaja:** más barata, más simple de aprovisionar, un solo endpoint.
 - **Inconveniente:** la analítica compite con la operación; menos aislamiento de

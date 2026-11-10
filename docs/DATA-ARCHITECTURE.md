@@ -13,14 +13,14 @@
 ## 0. Decisión principal (resumen)
 
 1. **Dos instancias RDS PostgreSQL en AWS**:
-   - `urbanmove-operational`: las **12 bases de datos operacionales**, una por
-     microservicio de negocio.
+   - `urbanmove-operational`: las **12 bases de datos de servicio**, una por
+     microservicio de negocio, más `keycloak_db` (base de infraestructura del IdP).
    - `urbanmove-analytics`: **una base** (`analytics_db`) con los data marts que
      consume Grafana.
 2. **Un único bucket S3** (`urbanmove-datalake`) con tres prefijos: `raw/`, `trusted/`
    y `curated/`.
 3. **Plan B asumido desde el principio**: si la integración en AWS o el crédito se
-   complican, se colapsa a **una sola instancia RDS con las 13 bases**. El código no
+   complican, se colapsa a **una sola instancia RDS con las 14 bases**. El código no
    cambia; solo cambia configuración. Los detalles están en la sección 13.
 
 > **Importante:** este documento **no descarta** la opción de una sola instancia.
@@ -64,7 +64,7 @@
 ```mermaid
 flowchart LR
     subgraph OP["RDS operacional"]
-        O1[(12 bases<br/>estado vivo)]
+        O1[(12 bases + keycloak_db<br/>estado vivo)]
     end
     subgraph MSG["Mensajería"]
         EB[EventBridge]
@@ -286,7 +286,8 @@ AWS
 │     ├── incidents_db
 │     ├── maintenance_db
 │     ├── relocation_db
-│     └── history_db
+│     ├── history_db
+│     └── keycloak_db            (infraestructura, no es de un microservicio)
 │
 └── RDS "urbanmove-analytics"            ── instancia más pequeña
       └── analytics_db
@@ -299,7 +300,8 @@ AWS
             └── mart_demanda
 ```
 
-Total: **12 bases operacionales + 1 base analítica = 13 bases**.
+Total: **12 bases de servicio + 1 base de infraestructura (`keycloak_db`) + 1 base
+analítica = 14 bases**.
 
 #### Por qué separar
 
@@ -334,8 +336,9 @@ GRANT USAGE, CREATE ON SCHEMA public TO reservations_svc;
 ### 6.3. Plan B: una sola instancia
 
 ```text
-RDS "urbanmove"  ── 13 bases
+RDS "urbanmove"  ── 14 bases
     ├── identity_db … history_db
+    ├── keycloak_db
     └── analytics_db
 ```
 
@@ -351,7 +354,7 @@ configuración (`DB_HOST`, `DB_NAME`). Cambiar de una a dos instancias es cambia
 
 ### 6.4. En local
 
-Un único contenedor `postgres:16` con las 13 bases. Es el equivalente al plan B, y
+Un único contenedor `postgres:16` con las 14 bases. Es el equivalente al plan B, y
 sigue siendo una arquitectura correcta: la separación lógica se mantiene.
 
 El script de inicialización crea las bases y los usuarios. Los servicios no saben si
@@ -600,13 +603,13 @@ La orden se publica como `RelocationOrderCreated` y la app de operaciones la com
 ### 10.2. Camino de escalado de la base de datos
 
 ```text
-Fase 1  2 instancias: operacional (12 BD) + analítica (1 BD)
+Fase 1  2 instancias: operacional (12 BD de servicio + keycloak_db) + analítica (1 BD)
 Fase 2  réplica de lectura para analytics si Grafana aprieta
 Fase 3  separar telemetry_db a su propia instancia si hay mucha escritura
 Fase 4  particionar tablas históricas y archivar a S3
 ```
 
-La separación lógica en 13 bases es lo que permite este camino. Una base compartida no
+La separación lógica en 14 bases es lo que permite este camino. Una base compartida no
 lo permitiría.
 
 ### 10.3. Cuellos de botella y mitigación
@@ -657,7 +660,7 @@ DLQ, idempotencia y reconstrucción de marts.
 
 ```text
 Docker Compose
-├── postgres:16          (13 bases)
+├── postgres:16          (14 bases)
 ├── localstack           (S3, SQS, EventBridge, Lambda, CloudWatch)
 ├── keycloak
 ├── prometheus
@@ -671,7 +674,7 @@ Coste: **0 €**. Es el entorno de desarrollo y de CI.
 
 ```text
 EC2 (Docker Compose)  ──►  servicios y Keycloak
-RDS operacional       ──►  12 bases
+RDS operacional       ──►  12 bases + keycloak_db
 RDS analítico         ──►  analytics_db
 S3 + SQS + EventBridge + Lambda + CloudWatch
 ```
@@ -726,7 +729,7 @@ Se activa el plan B si ocurre cualquiera de estos:
 
 | Aspecto | Dos instancias | Una instancia |
 |---|---|---|
-| Bases de datos | 12 + 1 en servidores distintos | 13 en el mismo servidor |
+| Bases de datos | 13 + 1 en servidores distintos | 14 en el mismo servidor |
 | Propiedad lógica | Igual | Igual |
 | Usuarios y permisos | Igual | Igual |
 | Código de los servicios | Igual | Igual |

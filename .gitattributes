@@ -1,0 +1,14 @@
+# Normaliza los saltos de línea en el repositorio.
+# Todos los ficheros de texto se guardan con LF; en Windows cada persona
+# puede tener CRLF en su copia de trabajo sin ensuciar los diffs.
+* text=auto eol=lf
+
+# Binarios
+*.pdf binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.jar binary
+*.zip binary

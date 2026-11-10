@@ -29,6 +29,7 @@ Diseñar, implementar y desplegar una arquitectura académica que demuestre:
 - [Plan maestro](docs/PLAN.md): alcance, requisitos, arquitectura, roadmap, equipo de 3, checklist, demo y rúbrica.
 - [Arquitectura](docs/ARCHITECTURE.md): C4, catálogo de servicios, propiedad de datos, estados y despliegue.
 - [Arquitectura de datos](docs/DATA-ARCHITECTURE.md): S3, PostgreSQL, DynamoDB, Parquet, eventos, inmutabilidad, dos instancias RDS y plan B.
+- [Entorno local](docs/LOCAL-DEV.md): herramientas, versiones, instalación, arranque de Docker, TDD y checklist de incorporación.
 - [Eventos](docs/EVENTS.md): sobre de evento, catálogo, outbox, idempotencia y DLQ.
 - [CI/CD](docs/CI-CD.md): pipelines, quality gates, evidencias y gestión de secretos.
 - [ADRs](docs/adr/): decisiones arquitectónicas iniciales.
@@ -52,6 +53,23 @@ Antes de implementar nada, conviene validar estas decisiones:
 8. **Terraform + GitHub Actions** para infraestructura y CI/CD.
 
 Cada decisión está justificada en su ADR correspondiente dentro de [`docs/adr/`](docs/adr/).
+
+---
+
+## 💻 Entorno local
+
+Antes de instalar nada, ten en cuenta el hardware:
+
+| Recurso | Mínimo | Recomendado |
+|---|---|---|
+| RAM | 8 GB | **16 GB** |
+| CPU | 4 núcleos | 6-8 núcleos |
+| Disco libre | 15 GB | 30 GB |
+
+Con 16 GB se pueden levantar la infraestructura y los 13 microservicios a la vez. Con
+8 GB hay que usar los perfiles de Docker Compose y no arrancar todo. La guía completa de
+herramientas, versiones, instalación y orden de arranque está en
+[`docs/LOCAL-DEV.md`](docs/LOCAL-DEV.md).
 
 ---
 

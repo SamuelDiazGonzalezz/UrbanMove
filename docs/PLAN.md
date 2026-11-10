@@ -165,7 +165,7 @@ El guion detallado está en la sección 24.
 |---|---|---|---|
 | Estrategia de desarrollo | Local-first con Docker Compose + LocalStack | AWS desde el día 1; solo local sin cloud | [0001](adr/0001-local-first-docker-compose.md) |
 | Base de datos operacional | PostgreSQL por servicio | DynamoDB, MySQL, MongoDB | [0002](adr/0002-postgresql-vs-dynamodb.md) |
-| Topología de base de datos | Dos instancias RDS: operacional (12 BD) y analítica (1 BD). Plan B: una instancia con 13 BD | Una sola instancia desde el inicio, 13 instancias, Aurora Serverless | [0006](adr/0006-dos-instancias-rds.md) |
+| Topología de base de datos | Dos instancias RDS: operacional (13 BD: 12 de servicio + `keycloak_db`) y analítica (1 BD). Plan B: una instancia con 14 BD | Una sola instancia desde el inicio, 13 instancias, Aurora Serverless | [0006](adr/0006-dos-instancias-rds.md) |
 | Organización analítica | Kappa + Medallón (raw/trusted/curated) | Lambda architecture, batch-only, Data Mesh | [0003](adr/0003-kappa-medallion.md) |
 | Identidad | Keycloak local / Cognito AWS + JWT | Login propio, Spring Authorization Server | [0004](adr/0004-keycloak-vs-cognito.md) |
 | Dashboard | Grafana + PostgreSQL + Prometheus | React propio, Metabase, Superset | [0005](adr/0005-grafana-dashboard.md) |
@@ -194,7 +194,7 @@ disponibilidad de altísima escritura. La justificación completa está en el
 
 La base operacional se despliega en una instancia RDS y los data marts en otra, para
 que la analítica no compita con reservas y viajes. Si AWS Academy o el crédito impiden
-mantener dos instancias, se colapsa a una sola instancia con las 13 bases: el código no
+mantener dos instancias, se colapsa a una sola instancia con las 14 bases: el código no
 cambia, solo la variable `DB_HOST` de `analytics` y de `mart-builder`.
 
 El detalle completo —topologías, permisos, coste, migración y disparadores del plan B—
@@ -768,7 +768,7 @@ Si hay cuenta:
 - Usar S3, SQS, EventBridge, Lambda y CloudWatch como servicios gestionados.
 - Evitar NAT Gateway, EKS, MSK y Redshift: son caros y no aportan al mínimo.
 - **Dos instancias RDS** (operacional y analítica) como objetivo. Si el crédito o los
-  límites de la cuenta no lo permiten, **una sola instancia con las 13 bases**: el código
+  límites de la cuenta no lo permiten, **una sola instancia con las 14 bases**: el código
   no cambia, solo `DB_HOST`. Ver [`DATA-ARCHITECTURE.md`](DATA-ARCHITECTURE.md),
   sección 13.
 - Si RDS no está disponible en la cuenta, PostgreSQL en la propia EC2 como último recurso.
