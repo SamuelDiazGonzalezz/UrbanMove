@@ -117,6 +117,11 @@ COMMIT;
 Un relay (`@Scheduled` o proceso aparte) lee `outbox_event` pendiente, publica en
 EventBridge y marca `SENT`. Si falla, reintenta.
 
+La tabla es **append-only**: no se borran las filas publicadas, solo se marca `SENT`. Así
+sirve a la vez de outbox y de event store para reconstruir el estado del servicio. La
+copia que se guarda en S3 `raw/` es independiente y tiene fines analíticos; no sustituye
+al outbox. Ver [`DATA-ARCHITECTURE.md`](DATA-ARCHITECTURE.md), sección 7.2.
+
 ### 4.3. Idempotencia
 
 Cada consumidor mantiene:

@@ -28,6 +28,7 @@ Diseñar, implementar y desplegar una arquitectura académica que demuestre:
 
 - [Plan maestro](docs/PLAN.md): alcance, requisitos, arquitectura, roadmap, equipo de 3, checklist, demo y rúbrica.
 - [Arquitectura](docs/ARCHITECTURE.md): C4, catálogo de servicios, propiedad de datos, estados y despliegue.
+- [Arquitectura de datos](docs/DATA-ARCHITECTURE.md): S3, PostgreSQL, DynamoDB, Parquet, eventos, inmutabilidad, dos instancias RDS y plan B.
 - [Eventos](docs/EVENTS.md): sobre de evento, catálogo, outbox, idempotencia y DLQ.
 - [CI/CD](docs/CI-CD.md): pipelines, quality gates, evidencias y gestión de secretos.
 - [ADRs](docs/adr/): decisiones arquitectónicas iniciales.
@@ -41,11 +42,14 @@ Antes de implementar nada, conviene validar estas decisiones:
 
 1. **Local-first con Docker Compose + LocalStack**, dejando AWS para una fase posterior.
 2. **PostgreSQL por microservicio** como base operacional; S3 solo para el Data Lake.
-3. **Kappa + Medallón** para la capa analítica.
-4. **Keycloak en local y Cognito en AWS** para el login.
-5. **Swagger/Postman + Grafana** como interfaces iniciales, sin frontend propio.
-6. **EventBridge + SQS + DLQ** como mecanismo de mensajería.
-7. **Terraform + GitHub Actions** para infraestructura y CI/CD.
+3. **Dos instancias RDS** (operacional y analítica) como objetivo, con **plan B de una
+   sola instancia** si AWS o el crédito lo complican. Ver
+   [`docs/DATA-ARCHITECTURE.md`](docs/DATA-ARCHITECTURE.md).
+4. **Kappa + Medallón** para la capa analítica.
+5. **Keycloak en local y Cognito en AWS** para el login.
+6. **Swagger/Postman + Grafana** como interfaces iniciales, sin frontend propio.
+7. **EventBridge + SQS + DLQ** como mecanismo de mensajería.
+8. **Terraform + GitHub Actions** para infraestructura y CI/CD.
 
 Cada decisión está justificada en su ADR correspondiente dentro de [`docs/adr/`](docs/adr/).
 

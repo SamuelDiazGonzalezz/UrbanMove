@@ -165,6 +165,7 @@ El guion detallado está en la sección 24.
 |---|---|---|---|
 | Estrategia de desarrollo | Local-first con Docker Compose + LocalStack | AWS desde el día 1; solo local sin cloud | [0001](adr/0001-local-first-docker-compose.md) |
 | Base de datos operacional | PostgreSQL por servicio | DynamoDB, MySQL, MongoDB | [0002](adr/0002-postgresql-vs-dynamodb.md) |
+| Topología de base de datos | Dos instancias RDS: operacional (12 BD) y analítica (1 BD). Plan B: una instancia con 13 BD | Una sola instancia desde el inicio, 13 instancias, Aurora Serverless | [0006](adr/0006-dos-instancias-rds.md) |
 | Organización analítica | Kappa + Medallón (raw/trusted/curated) | Lambda architecture, batch-only, Data Mesh | [0003](adr/0003-kappa-medallion.md) |
 | Identidad | Keycloak local / Cognito AWS + JWT | Login propio, Spring Authorization Server | [0004](adr/0004-keycloak-vs-cognito.md) |
 | Dashboard | Grafana + PostgreSQL + Prometheus | React propio, Metabase, Superset | [0005](adr/0005-grafana-dashboard.md) |
@@ -188,6 +189,17 @@ por microservicio. DynamoDB se ha considerado y se descarta para el núcleo porq
 DynamoDB queda como **ampliación opcional** para telemetría o para un read model de
 disponibilidad de altísima escritura. La justificación completa está en el
 [ADR 0002](adr/0002-postgresql-vs-dynamodb.md).
+
+### 6.2. Dos instancias RDS y plan B
+
+La base operacional se despliega en una instancia RDS y los data marts en otra, para
+que la analítica no compita con reservas y viajes. Si AWS Academy o el crédito impiden
+mantener dos instancias, se colapsa a una sola instancia con las 13 bases: el código no
+cambia, solo la variable `DB_HOST` de `analytics` y de `mart-builder`.
+
+El detalle completo —topologías, permisos, coste, migración y disparadores del plan B—
+está en [`DATA-ARCHITECTURE.md`](DATA-ARCHITECTURE.md) y en el
+[ADR 0006](adr/0006-dos-instancias-rds.md).
 
 ---
 
@@ -389,6 +401,10 @@ s3://urbanmove-datalake/curated/domain=demand/year=2026/month=11/day=10/
 - `trusted`: validado, deduplicado por `eventId`, normalizado y en Parquet.
 - `curated`: agregados listos para los marts.
 
+Un solo bucket con tres prefijos (no *tags*). La inmutabilidad de `raw` se garantiza con
+claves únicas por `eventId`, Versioning y, en AWS, Object Lock. El detalle está en
+[`DATA-ARCHITECTURE.md`](DATA-ARCHITECTURE.md), sección 5.
+
 ### 12.3. Data marts
 
 | Mart | Pregunta que responde | Prioridad |
@@ -403,6 +419,10 @@ s3://urbanmove-datalake/curated/domain=demand/year=2026/month=11/day=10/
 
 Mínimo obligatorio: 4. Objetivo: 7. Si el tiempo aprieta, se priorizan
 `mart_viajes`, `mart_flota`, `mart_mantenimiento` y `mart_demanda`.
+
+Los marts se materializan en `analytics_db`, dentro de la instancia RDS analítica, y son
+**proyecciones reconstruibles**: se pueden borrar y recalcular desde los eventos. Ver
+[`DATA-ARCHITECTURE.md`](DATA-ARCHITECTURE.md), secciones 8 y 9.
 
 ### 12.4. Regla de recolocación
 
@@ -506,6 +526,8 @@ expiración de una reserva.
 - Data Lake particionado por fecha, tipo de evento y origen.
 - Marts incrementales por ventana temporal; no se recalcula todo.
 - Analítica separada de la base de datos operacional: nunca bloquea reservas ni viajes.
+- **Dos instancias RDS** (operacional y analítica) desde el inicio; una instancia por
+  servicio solo si un dominio concreto lo exige.
 - Pool de conexiones y réplicas de lectura si hiciera falta.
 
 ### 16.1. Cuellos de botella y mitigación
@@ -745,13 +767,18 @@ Si hay cuenta:
 - Preferir **una sola EC2** con Docker Compose para los servicios.
 - Usar S3, SQS, EventBridge, Lambda y CloudWatch como servicios gestionados.
 - Evitar NAT Gateway, EKS, MSK y Redshift: son caros y no aportan al mínimo.
-- RDS solo si el presupuesto lo permite; si no, PostgreSQL en la EC2.
+- **Dos instancias RDS** (operacional y analítica) como objetivo. Si el crédito o los
+  límites de la cuenta no lo permiten, **una sola instancia con las 13 bases**: el código
+  no cambia, solo `DB_HOST`. Ver [`DATA-ARCHITECTURE.md`](DATA-ARCHITECTURE.md),
+  sección 13.
+- Si RDS no está disponible en la cuenta, PostgreSQL en la propia EC2 como último recurso.
 - Configurar AWS Budgets con alertas.
 - Destruir o parar los recursos después de cada demo.
 
-Coste orientativo de una ventana de demo: **< 20 €** si se destruye al terminar.
-Dejar 10 servicios en ECS Fargate encendidos puede costar ~90 €/mes solo en cómputo,
-así que no es la opción por defecto.
+Coste orientativo de una ventana de demo: **< 20-30 €** si se destruye al terminar, con
+dos instancias `db.t4g.micro`. Con una sola instancia, aproximadamente la mitad. Dejar 10
+servicios en ECS Fargate encendidos puede costar ~90 €/mes solo en cómputo, así que no es
+la opción por defecto.
 
 ### 23.3. Sección obligatoria del PDF final
 

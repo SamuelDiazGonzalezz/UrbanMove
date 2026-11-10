@@ -1,7 +1,8 @@
 # Arquitectura de UrbanMove
 
 > Documento técnico de referencia. El plan, el roadmap y el reparto están en
-> [`PLAN.md`](PLAN.md).
+> [`PLAN.md`](PLAN.md). El detalle de almacenamiento, eventos e inmutabilidad está en
+> [`DATA-ARCHITECTURE.md`](DATA-ARCHITECTURE.md).
 
 ---
 
@@ -172,12 +173,12 @@ flowchart LR
 |---|---|
 | API Gateway / Nginx | Punto de entrada, TLS, rate limit, CORS, validación de JWT |
 | Keycloak / Cognito | Login, tokens, roles |
-| PostgreSQL | Datos transaccionales, una base de datos por servicio |
+| PostgreSQL operacional | Datos transaccionales, una base de datos por servicio (12 bases) |
+| PostgreSQL analítico | Data marts para el dashboard (`analytics_db`) |
 | EventBridge | Bus de eventos de dominio |
 | SQS + DLQ | Desacoplo, buffer, reintentos y mensajes fallidos |
 | Lambda | Expiración, detección, ingesta, marts y recolocación |
 | S3 | Data Lake raw/trusted/curated |
-| PostgreSQL analytics | Data marts para el dashboard |
 | Grafana | Dashboard operativo y paneles técnicos |
 | Prometheus | Métricas de los servicios |
 
@@ -364,7 +365,8 @@ consulta y la completa.
 ### 10.1. Local (por defecto)
 
 - Docker Compose.
-- PostgreSQL, LocalStack, Keycloak, Grafana, Prometheus.
+- Un contenedor PostgreSQL con las 13 bases (equivalente al plan B de AWS).
+- LocalStack, Keycloak, Grafana y Prometheus.
 - Servicios Spring Boot con perfil `local`.
 - Lambdas ejecutadas contra LocalStack.
 - CI con los mismos contenedores.
@@ -374,13 +376,15 @@ consulta y la completa.
 - Una EC2 con Docker Compose para los servicios.
 - S3, SQS, EventBridge, Lambda y CloudWatch reales.
 - Keycloak en la EC2 o Cognito.
-- RDS solo si el presupuesto lo permite.
+- **Dos instancias RDS** (operacional y analítica) como objetivo. Si la cuenta o el
+  crédito no lo permiten, una sola instancia con las 13 bases o PostgreSQL en la EC2.
 - Recursos creados con Terraform cuando sea posible.
 
 ### 10.3. AWS real (opcional)
 
 - ECS Fargate + ALB para los servicios críticos.
-- RDS PostgreSQL.
+- RDS PostgreSQL operacional con Multi-AZ.
+- RDS PostgreSQL analítico (instancia menor, réplica de lectura opcional).
 - S3 + SQS + EventBridge + Lambda.
 - ECR para imágenes.
 - CloudWatch + X-Ray.
@@ -426,10 +430,13 @@ consulta y la completa.
 - Lambdas en paralelo.
 - Lake particionado.
 - Marts incrementales.
-- Analítica separada de la operación.
+- Analítica separada de la operación mediante **dos instancias RDS** (operacional y
+  analítica).
 - Cuellos de botella identificados: escrituras en reservas/disponibilidad y consultas
   analíticas. Mitigaciones: bloqueo optimista, índices, caché, réplicas de lectura y
   preagregación.
+- Camino de escalado: separar `telemetry_db` a su propia instancia, añadir réplica de
+  lectura para analítica y particionar tablas históricas.
 
 ---
 
@@ -457,3 +464,8 @@ consulta y la completa.
 - ¿DynamoDB para telemetría? Solo si se quiere la ampliación; no es camino crítico.
 - ¿Terraform para LocalStack desde el inicio o tras la Fase 1? Se recomienda desde la
   Fase 0 para no acumular deuda.
+
+**Decidido:** dos instancias RDS PostgreSQL (operacional y analítica), con plan B de una
+sola instancia si AWS o el crédito lo impiden. Ver
+[`DATA-ARCHITECTURE.md`](DATA-ARCHITECTURE.md) y el
+[ADR 0006](adr/0006-dos-instancias-rds.md).
