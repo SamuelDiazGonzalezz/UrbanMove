@@ -91,3 +91,7 @@ reports/
 test-results/
 playwright-report/
 screenshots/
+
+# --- Guías locales de desarrollo (no forman parte de la documentación de diseño) ---
+AGENTS.md
+.agents/
