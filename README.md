@@ -27,6 +27,7 @@ Diseñar, implementar y desplegar una arquitectura académica que demuestre:
 ## 📚 Documentación
 
 - [Plan maestro](docs/PLAN.md): alcance, requisitos, arquitectura, roadmap, equipo de 3, checklist, demo y rúbrica.
+- [Reunión de arranque](docs/KICKOFF.md): agenda, decisiones clave, reparto, checkboxes y acta para la primera reunión del equipo.
 - [Arquitectura](docs/ARCHITECTURE.md): C4, catálogo de servicios, propiedad de datos, estados y despliegue.
 - [Arquitectura de datos](docs/DATA-ARCHITECTURE.md): S3, PostgreSQL, DynamoDB, Parquet, eventos, inmutabilidad, dos instancias RDS y plan B.
 - [Entorno local](docs/LOCAL-DEV.md): herramientas, versiones, instalación, arranque de Docker, TDD y checklist de incorporación.
