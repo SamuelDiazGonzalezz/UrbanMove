@@ -30,6 +30,9 @@ Diseñar, implementar y desplegar una arquitectura académica que demuestre:
 - [Arquitectura](docs/ARCHITECTURE.md): C4, catálogo de servicios, propiedad de datos, estados y despliegue.
 - [Arquitectura de datos](docs/DATA-ARCHITECTURE.md): S3, PostgreSQL, DynamoDB, Parquet, eventos, inmutabilidad, dos instancias RDS y plan B.
 - [Entorno local](docs/LOCAL-DEV.md): herramientas, versiones, instalación, arranque de Docker, TDD y checklist de incorporación.
+- [Estándares de código](docs/CODE-STANDARDS.md): nomenclatura, legibilidad, SOLID, Ley de Deméter, inmutabilidad y reglas de arquitectura hexagonal.
+- [Pruebas](docs/TESTING.md): pirámide, Testcontainers, LocalStack, idempotencia, contratos y cobertura.
+- [Contenedores](docs/CONTAINERS.md): Dockerfile multi-stage, JVM, probes, Compose y seguridad de imagen.
 - [Eventos](docs/EVENTS.md): sobre de evento, catálogo, outbox, idempotencia y DLQ.
 - [CI/CD](docs/CI-CD.md): pipelines, quality gates, evidencias y gestión de secretos.
 - [ADRs](docs/adr/): decisiones arquitectónicas iniciales.

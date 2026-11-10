@@ -244,6 +244,10 @@ Así no se pierde un evento si el bus está caído.
 > Los nombres exactos de endpoints y payloads se fijan en `contracts/openapi/` antes de
 > implementar cada servicio.
 
+Las convenciones de implementación (nomenclatura, estructura de paquetes, reglas de
+dependencia) están en [CODE-STANDARDS.md](CODE-STANDARDS.md); la estrategia de pruebas en
+[TESTING.md](TESTING.md) y el empaquetado en [CONTAINERS.md](CONTAINERS.md).
+
 ---
 
 ## 6. Propiedad de datos

@@ -123,6 +123,8 @@ Reglas:
 - Cada servicio tiene sus propios tests.
 - Los tests E2E viven en el repositorio y se ejecutan en CI.
 
+El detalle de cada nivel está en [TESTING.md](TESTING.md).
+
 ---
 
 ## 5. Evidencias para la entrega

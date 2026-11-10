@@ -639,6 +639,9 @@ Con tres personas y dos meses, TDD estricto en los 13 servicios frena más de lo
 protege. Pero hay zonas donde un bug cuesta horas de demo: las reglas de reserva, la
 máquina de estados, la idempotencia y los agregados. Ahí TDD es obligatorio.
 
+El detalle de la pirámide, Testcontainers, LocalStack, contratos y cobertura está en
+[TESTING.md](TESTING.md).
+
 ### 7.2. Qué se escribe test-first
 
 | Zona | Por qué |
@@ -735,6 +738,7 @@ El test se escribe antes que `Reservation`. Es donde TDD paga.
 | Versiones | Fijadas; actualizar con un commit específico |
 | Servicios | Un servicio no lee la base de otro |
 | Tests | Sin H2, sin `Thread.sleep()`, sin tests vacíos |
+| Código | Nomenclatura, legibilidad y arquitectura según [CODE-STANDARDS.md](CODE-STANDARDS.md) |
 
 ### 9.1. Definición de "hecho" por servicio
 
@@ -787,6 +791,8 @@ Cada integrante, al empezar:
 - [PLAN.md](PLAN.md): plan maestro y fases.
 - [ARCHITECTURE.md](ARCHITECTURE.md): arquitectura y despliegue.
 - [DATA-ARCHITECTURE.md](DATA-ARCHITECTURE.md): almacenamiento, eventos e inmutabilidad.
+- [CODE-STANDARDS.md](CODE-STANDARDS.md): nomenclatura, legibilidad, SOLID e inmutabilidad.
+- [TESTING.md](TESTING.md): pirámide, Testcontainers, LocalStack y contratos.
+- [CONTAINERS.md](CONTAINERS.md): imágenes, JVM, probes y Compose.
 - [EVENTS.md](EVENTS.md): catálogo de eventos.
 - [CI-CD.md](CI-CD.md): pipelines y quality gates.
-- `AGENTS.md` (local, no versionado): reglas de código Java del equipo.
