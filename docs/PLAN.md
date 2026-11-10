@@ -43,10 +43,11 @@ reduce coste, riesgo y dependencia de permisos cloud.
 - [x] Inicializar git y conectar el repositorio de GitHub.
 - [x] Crear la estructura documental y este plan maestro.
 - [x] Documentar las decisiones iniciales en ADRs.
-- [x] Crear `.gitignore`, `.env.example`, `Makefile` y script de desarrollo local.
+- [x] Dejar el repositorio solo con documentación para la revisión del equipo.
 
 **Lo que no se ha hecho todavía:** no hay código de negocio, ni `docker-compose.yml`,
-ni POM padre, ni pipeline. Eso es la Fase 0.
+ni POM padre, ni pipeline, ni estructura de carpetas de implementación. Eso es la
+Fase 0, y no se empieza hasta que el equipo valide el plan.
 
 ---
 
@@ -540,7 +541,10 @@ Observabilidad:
 
 ---
 
-## 18. Estructura del repositorio
+## 18. Estructura prevista del repositorio
+
+> Esta estructura se creará en la Fase 0, cuando el equipo valide el plan. Ahora mismo
+> el repositorio solo contiene documentación.
 
 ```text
 urbanmobility/
@@ -679,7 +683,7 @@ Reglas de coordinación:
 - [x] Git inicializado y conectado a GitHub.
 - [x] Plan maestro y documentación inicial.
 - [x] ADRs iniciales.
-- [x] `.gitignore`, `.env.example`, `Makefile` y `scripts/dev.ps1`.
+- [x] Repositorio dejado solo con documentación para revisión.
 
 ### Fase 0
 

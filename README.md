@@ -2,8 +2,8 @@
 
 Sistema distribuido de movilidad urbana (bicicletas y patinetes eléctricos) para la asignatura **Computación en la Nube** del Grado en Ingeniería Informática (ULPGC).
 
-> **Estado:** Fase 0 — cimientos y documentación.
-> El repositorio se ha reiniciado para empezar desde cero: la implementación anterior se eliminó y solo se conserva el enunciado como referencia.
+> **Estado:** Fase 0 — diseño y planificación.
+> Este repositorio contiene **únicamente documentación**. Todavía no hay código, infraestructura ni pipelines implementados. El objetivo es que el equipo revise y valide las decisiones antes de empezar a construir.
 
 ---
 
@@ -11,48 +11,49 @@ Sistema distribuido de movilidad urbana (bicicletas y patinetes eléctricos) par
 
 Diseñar, implementar y desplegar una arquitectura académica que demuestre:
 
-- Microservicios atómicos con responsabilidades claras.
+- 10 microservicios atómicos con responsabilidades y datos propios.
+- 3 interfaces diferenciadas: usuario, mantenimiento/operaciones y dashboard.
 - Comunicación asíncrona por eventos.
-- Funciones Lambda para procesos automáticos.
-- Data Lake con capas raw/trusted/curated.
-- Data marts y dashboard operativo.
+- 3 funciones Lambda conectadas a eventos reales.
+- Data Lake con capas raw / trusted / curated.
+- Al menos 4 data marts y dashboard operativo.
+- Generación de órdenes de recolocación a partir de la demanda.
 - Tolerancia a fallos, escalabilidad y observabilidad.
 - CI/CD reproducible con GitHub Actions.
 - Infraestructura como código.
 
 ---
 
-## 🧱 Stack previsto
-
-| Capa | Tecnología |
-|---|---|
-| Lenguaje | Java 21 |
-| Microservicios | Spring Boot 3.5.x |
-| Persistencia | PostgreSQL 16 + Flyway |
-| Identidad | Keycloak (local) / Cognito (AWS) |
-| Mensajería | EventBridge + SQS + DLQ (LocalStack en local) |
-| Serverless | AWS Lambda (Java/Python) |
-| Data Lake | S3 (LocalStack/MinIO en local) |
-| Analítica | PostgreSQL (marts) + Parquet + Grafana |
-| Contenedores | Docker + Docker Compose |
-| IaC | Terraform |
-| CI/CD | GitHub Actions |
-| Observabilidad | Actuator + Micrometer + Prometheus + Grafana |
-
----
-
 ## 📚 Documentación
 
-- [Plan maestro](docs/PLAN.md): alcance, arquitectura, roadmap, equipo, checklist y demo.
-- [Arquitectura](docs/ARCHITECTURE.md): C4, servicios, propiedad de datos, estados y despliegue.
+- [Plan maestro](docs/PLAN.md): alcance, requisitos, arquitectura, roadmap, equipo de 3, checklist, demo y rúbrica.
+- [Arquitectura](docs/ARCHITECTURE.md): C4, catálogo de servicios, propiedad de datos, estados y despliegue.
 - [Eventos](docs/EVENTS.md): sobre de evento, catálogo, outbox, idempotencia y DLQ.
-- [CI/CD](docs/CI-CD.md): pipelines, quality gates, evidencias y secretos.
-- [ADRs](docs/adr/): decisiones arquitectónicas.
+- [CI/CD](docs/CI-CD.md): pipelines, quality gates, evidencias y gestión de secretos.
+- [ADRs](docs/adr/): decisiones arquitectónicas iniciales.
 - [Enunciado original](docs/urbanmove.pdf).
 
 ---
 
-## 🗂️ Estructura del repositorio
+## 🧭 Decisiones que el equipo debe revisar
+
+Antes de implementar nada, conviene validar estas decisiones:
+
+1. **Local-first con Docker Compose + LocalStack**, dejando AWS para una fase posterior.
+2. **PostgreSQL por microservicio** como base operacional; S3 solo para el Data Lake.
+3. **Kappa + Medallón** para la capa analítica.
+4. **Keycloak en local y Cognito en AWS** para el login.
+5. **Swagger/Postman + Grafana** como interfaces iniciales, sin frontend propio.
+6. **EventBridge + SQS + DLQ** como mecanismo de mensajería.
+7. **Terraform + GitHub Actions** para infraestructura y CI/CD.
+
+Cada decisión está justificada en su ADR correspondiente dentro de [`docs/adr/`](docs/adr/).
+
+---
+
+## 🗂️ Estructura prevista (aún no creada)
+
+Cuando el equipo apruebe el plan, la Fase 0 creará esta estructura:
 
 ```text
 urbanmobility/
@@ -60,32 +61,24 @@ urbanmobility/
 ├── lambdas/           # Funciones serverless
 ├── infra/             # Terraform y configuración de LocalStack
 ├── contracts/         # OpenAPI, AsyncAPI y JSON Schema
-├── clients/           # App usuario, app operaciones y dashboard
+├── clients/           # Swagger/Postman y Grafana
 ├── docs/              # Documentación y enunciado
 ├── scripts/           # Seed, demo y utilidades
 ├── .github/workflows/ # CI/CD
-├── docker-compose.yml # (Fase 0) plataforma local
-└── pom.xml            # (Fase 0) POM padre del monorepo
+├── docker-compose.yml # Plataforma local
+└── pom.xml            # POM padre del monorepo
 ```
 
 ---
 
-## 🚀 Arranque local (previsto)
+## 🚦 Estado
 
-Requisitos: JDK 21, Docker Desktop, Git y, opcionalmente, Terraform y GitHub CLI.
-
-```powershell
-# 1. Copiar variables de entorno locales
-Copy-Item .env.example .env
-
-# 2. Levantar la plataforma local (cuando exista en Fase 0)
-.\scripts\dev.ps1 up
-
-# 3. Comprobar servicios
-.\scripts\dev.ps1 ps
-```
-
-> Los comandos anteriores estarán disponibles cuando se complete la Fase 0. Hasta entonces, este README es la guía de intención y el plan está en [`docs/PLAN.md`](docs/PLAN.md).
+- [x] Analizar el enunciado completo.
+- [x] Identificar los mínimos obligatorios y la rúbrica.
+- [x] Documentar la arquitectura y las decisiones iniciales.
+- [x] Reiniciar el repositorio y dejar solo la documentación.
+- [ ] Revisar y validar las decisiones con el equipo.
+- [ ] Empezar la Fase 0: plataforma local, POM padre, Keycloak, LocalStack y CI.
 
 ---
 
@@ -98,9 +91,9 @@ Proyecto de 3 personas. El reparto propuesto está en [`docs/PLAN.md`](docs/PLAN
 ## 🔐 Seguridad
 
 - No se versionan credenciales ni secretos.
-- `.env` está ignorado; solo se versiona `.env.example`.
+- Cuando exista código, `.env` estará ignorado y solo se versionará `.env.example`.
 - En AWS se usarán roles IAM y OIDC para GitHub Actions.
-- Las credenciales de LocalStack son de desarrollo (`test`/`test`).
+- Las credenciales de LocalStack serán de desarrollo (`test`/`test`).
 
 ---
 
