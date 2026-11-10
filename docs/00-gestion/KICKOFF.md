@@ -7,7 +7,7 @@
 > **Cómo se usa:** se lee antes de la reunión, se marca cada casilla durante la reunión y
 > se archiva el acta al final. La versión PDF es una copia para llevar; la fuente de
 > verdad es este Markdown.
-> **Copia para imprimir:** [KICKOFF.pdf](KICKOFF.pdf) (11 páginas).
+> **Copia para imprimir:** [KICKOFF.pdf](KICKOFF.pdf).
 
 ---
 
@@ -16,25 +16,92 @@
 Cada integrante llega habiendo leído, al menos:
 
 - [ ] [PLAN.md](PLAN.md) — fases, reparto y riesgos.
-- [ ] [ARCHITECTURE.md](ARCHITECTURE.md) — servicios y comunicación.
-- [ ] [DATA-ARCHITECTURE.md](DATA-ARCHITECTURE.md) — PostgreSQL, S3 y marts.
-- [ ] [CODE-STANDARDS.md](CODE-STANDARDS.md) — cómo se escribe el código.
-- [ ] [TESTING.md](TESTING.md) — qué se prueba y con qué.
-- [ ] [LOCAL-DEV.md](LOCAL-DEV.md) — qué instalar y cómo arrancar.
-- [ ] [CONTAINERS.md](CONTAINERS.md) — cómo se empaqueta.
-- [ ] [EVENTS.md](EVENTS.md) — eventos, outbox e idempotencia.
+- [ ] [ARCHITECTURE.md](../01-arquitectura/ARCHITECTURE.md) — servicios y comunicación.
+- [ ] [DATA-ARCHITECTURE.md](../01-arquitectura/DATA-ARCHITECTURE.md) — PostgreSQL, S3 y marts.
+- [ ] [CODE-STANDARDS.md](../02-desarrollo/CODE-STANDARDS.md) — cómo se escribe el código.
+- [ ] [TESTING.md](../02-desarrollo/TESTING.md) — qué se prueba y con qué.
+- [ ] [LOCAL-DEV.md](../02-desarrollo/LOCAL-DEV.md) — qué instalar y cómo arrancar.
+- [ ] [CONTAINERS.md](../02-desarrollo/CONTAINERS.md) — cómo se empaqueta.
+- [ ] [EVENTS.md](../01-arquitectura/EVENTS.md) — eventos, outbox e idempotencia.
 
-Si alguien no ha podido leer todo, se lee como mínimo la sección 4 de este documento
+Si alguien no ha podido leer todo, se lee como mínimo la sección 5 de este documento
 (decisiones) antes de empezar.
 
 ---
 
-## 2. Agenda (120 minutos)
+## 2. Cómo rellenar este documento
+
+Este Markdown es la fuente de verdad. El PDF es solo una copia para imprimir y no se
+edita.
+
+### 2.1. Editar desde GitHub (lo más rápido)
+
+1. Abrir `docs/00-gestion/KICKOFF.md` en GitHub.
+2. Pulsar el lápiz (**Edit this file**).
+3. Hacer los cambios.
+4. Elegir **Commit changes**:
+   - directo a `main` si es una corrección pequeña;
+   - en una rama `docs/reunion-<fecha>` y abrir un PR si son cambios grandes.
+5. Confirmar el commit con un mensaje como `docs: update kickoff minutes`.
+
+### 2.2. Editar en local (recomendado para la reunión)
+
+```bash
+git pull
+# editar docs/00-gestion/KICKOFF.md en VS Code o IntelliJ
+git add docs/00-gestion/KICKOFF.md
+git commit -m "docs: update kickoff decisions and actions"
+git push
+```
+
+Nadie más toca el archivo mientras se edita. Si dos personas lo cambian a la vez, el
+segundo hace `git pull --rebase` y resuelve el conflicto a mano; no se sobrescribe.
+
+### 2.3. Reglas de marcado
+
+| Quiero... | Cómo se escribe |
+|---|---|
+| Marcar una tarea hecha | `- [ ]` → `- [x]` |
+| Cerrar una decisión | Cambiar `☐` por `☑` en la columna **¿Cerrada?** |
+| Rellenar un nombre | Sustituir `________________` por el nombre real |
+| Anotar la decisión final | Escribirla en la tabla del **Acta** (sección 13.1) |
+| Aplazar una decisión | Anotarla en **Decisiones aparcadas** con fecha de revisión |
+| Añadir una acción | Añadir una fila en **Acciones acordadas** con dueño y fecha |
+
+No se borran las decisiones descartadas: se marcan como cerradas y se explica el motivo
+en el acta. El histórico se conserva.
+
+### 2.4. Quién actualiza qué
+
+| Momento | Responsable | Acción |
+|---|---|---|
+| Antes de la reunión | A | Comprueba que el documento está en `main` |
+| Durante la reunión | A | Marca casillas y rellena el acta |
+| Después de la reunión | A | Commit con el acta y aviso al grupo |
+| Cambio de decisión posterior | Quien la propone | Actualiza el documento y, si toca arquitectura, crea un ADR |
+
+### 2.5. El PDF
+
+- No se edita a mano.
+- Se regenera solo cuando cambie el Markdown y haga falta una copia para imprimir.
+- Si no se regenera, el PDF queda desactualizado: **lo válido es siempre el Markdown**.
+- Para regenerarlo hace falta `pandoc`:
+
+```bash
+pandoc docs/00-gestion/KICKOFF.md -o docs/00-gestion/KICKOFF.pdf --pdf-engine=wkhtmltopdf
+```
+
+Si no hay `pandoc` instalado, se pide al asistente que lo regenere o se imprime el
+Markdown desde GitHub.
+
+---
+
+## 3. Agenda (120 minutos)
 
 | Min | Tema | Resultado esperado |
 |---|---|---|
 | 0-10 | Contexto y objetivo del proyecto | Todos alineados en alcance y plazo |
-| 10-40 | Decisiones clave (sección 4) | Cada decisión marcada o aparcada con fecha |
+| 10-40 | Decisiones clave (sección 5) | Cada decisión marcada o aparcada con fecha |
 | 40-55 | Alcance: mínimos y recortes | Lista de lo que entra y lo que no |
 | 55-70 | Reparto de responsabilidades | Nombres reales en A, B y C |
 | 70-85 | Fase 0: tareas de la semana 1 | Cada tarea con dueño y día |
@@ -48,7 +115,7 @@ recomendación marcada y se revisa en la integración del viernes. No se bloquea
 
 ---
 
-## 3. Contexto en una página
+## 4. Contexto en una página
 
 | Aspecto | Situación |
 |---|---|
@@ -67,12 +134,12 @@ avanzado, Kubernetes, alta disponibilidad multirregión.
 
 ---
 
-## 4. Decisiones clave
+## 5. Decisiones clave
 
 Cada fila se marca durante la reunión. La columna **Recomendación** ya está decidida por
 defecto: si nadie presenta un argumento nuevo, se adopta tal cual.
 
-### 4.1. Decisiones tecnológicas
+### 5.1. Decisiones tecnológicas
 
 | ID | Decisión | Alternativas | Recomendación | Dueño | ¿Cerrada? |
 |---|---|---|---|---|---|
@@ -97,7 +164,7 @@ defecto: si nadie presenta un argumento nuevo, se adopta tal cual.
 | D19 | Paquete raíz | `com.example`, `es.ucm` | **`com.urbanmove`** | Todos | ☐ |
 | D20 | IaC | CloudFormation, CDK, Terraform | **Terraform** cuando exista AWS; no bloquea la Fase 0 | C | ☐ |
 
-### 4.2. Decisiones de alcance
+### 5.2. Decisiones de alcance
 
 | ID | Decisión | Recomendación | ¿Cerrada? |
 |---|---|---|---|
@@ -108,7 +175,7 @@ defecto: si nadie presenta un argumento nuevo, se adopta tal cual.
 | A5 | Datos de demo | 3 zonas, 10 vehículos, 3 usuarios, 20 viajes simulados | ☐ |
 | A6 | Autenticación en demo | Token de Keycloak en Postman/Bruno; sin formulario propio | ☐ |
 
-### 4.3. Decisiones de proceso
+### 5.3. Decisiones de proceso
 
 | ID | Decisión | Recomendación | ¿Cerrada? |
 |---|---|---|---|
@@ -126,7 +193,7 @@ defecto: si nadie presenta un argumento nuevo, se adopta tal cual.
 
 ---
 
-## 5. Reparto del equipo
+## 6. Reparto del equipo
 
 Rellenar con nombres reales. La propuesta es por dominio, no por tecnología.
 
@@ -153,9 +220,9 @@ Reglas de convivencia:
 
 ---
 
-## 6. Alcance confirmado
+## 7. Alcance confirmado
 
-### 6.1. Mínimos que no se recortan
+### 7.1. Mínimos que no se recortan
 
 - [ ] 10 microservicios atómicos con base de datos propia.
 - [ ] `history` como servicio independiente.
@@ -170,7 +237,7 @@ Reglas de convivencia:
 - [ ] Tests, imágenes, migraciones y CI documentados.
 - [ ] Informe y defensa de los 3 integrantes.
 
-### 6.2. Ampliaciones que se pueden recortar
+### 7.2. Ampliaciones que se pueden recortar
 
 - [ ] DynamoDB para telemetría.
 - [ ] Recolocación automática avanzada.
@@ -180,7 +247,7 @@ Reglas de convivencia:
 
 ---
 
-## 7. Fase 0: semana 1
+## 8. Fase 0: semana 1
 
 **Criterio de fin de semana:** `docker compose --profile infra up` funciona, `zones`
 responde, Keycloak emite token, un evento llega a `raw/` en S3 y el CI está verde.
@@ -256,7 +323,7 @@ responde, Keycloak emite token, un evento llega a `raw/` en S3 y el CI está ver
 
 ---
 
-## 8. Semanas 2-3: primer flujo completo
+## 9. Semanas 2-3: primer flujo completo
 
 Orden de implementación acordado:
 
@@ -285,9 +352,9 @@ Reparto orientativo:
 
 ---
 
-## 9. Rituales y definición de "hecho"
+## 10. Rituales y definición de "hecho"
 
-### 9.1. Semana tipo
+### 10.1. Semana tipo
 
 | Día | Ritual | Duración |
 |---|---|---|
@@ -295,7 +362,7 @@ Reparto orientativo:
 | Miércoles | Integración parcial de lo terminado | 45 min |
 | Viernes | Integración completa + demo + acta | 60 min |
 
-### 9.2. Definición de "hecho" por servicio
+### 10.2. Definición de "hecho" por servicio
 
 - [ ] Contrato OpenAPI en `contracts/openapi/`.
 - [ ] JSON Schema de eventos publicados y consumidos.
@@ -310,7 +377,7 @@ Reparto orientativo:
 - [ ] `./mvnw verify` verde.
 - [ ] PR revisado y mergeado con CI verde.
 
-### 9.3. Reglas de PR
+### 10.3. Reglas de PR
 
 - [ ] Título con prefijo (`feat:`, `fix:`, `test:`, `docs:`).
 - [ ] Descripción con qué, por qué y cómo se probó.
@@ -320,7 +387,7 @@ Reparto orientativo:
 
 ---
 
-## 10. Riesgos y responsables
+## 11. Riesgos y responsables
 
 | Riesgo | Impacto | Mitigación | Responsable | ¿Aceptado? |
 |---|---|---|---|---|
@@ -335,7 +402,7 @@ Reparto orientativo:
 
 ---
 
-## 11. Primeras diez acciones
+## 12. Primeras diez acciones
 
 | # | Acción | Dueño | Fecha límite | ¿Hecha? |
 |---|---|---|---|---|
@@ -352,11 +419,11 @@ Reparto orientativo:
 
 ---
 
-## 12. Acta de la reunión
+## 13. Acta de la reunión
 
 **Fecha:** ____________________  **Duración:** ________  **Asistentes:** ____________________
 
-### 12.1. Decisiones tomadas
+### 13.1. Decisiones tomadas
 
 | ID | Decisión final | Observaciones |
 |---|---|---|
@@ -381,14 +448,14 @@ Reparto orientativo:
 | D19 | | |
 | D20 | | |
 
-### 12.2. Decisiones aparcadas
+### 13.2. Decisiones aparcadas
 
 | Tema | Motivo | Revisar el |
 |---|---|---|
 | | | |
 | | | |
 
-### 12.3. Acciones acordadas
+### 13.3. Acciones acordadas
 
 | Acción | Dueño | Fecha | Estado |
 |---|---|---|---|
@@ -396,23 +463,10 @@ Reparto orientativo:
 | | | | ☐ |
 | | | | ☐ |
 
-### 12.4. Próxima reunión
+### 13.4. Próxima reunión
 
 **Fecha:** ____________________  **Objetivo:** ______________________________
 
 ---
 
-## 13. Validación del plan
-
-Con la firma de esta sección, el equipo confirma que el plan es realista y que la Fase 0
-puede empezar.
-
-| Integrante | Nombre | Firma | Fecha |
-|---|---|---|---|
-| A | | | |
-| B | | | |
-| C | | | |
-
-> Si alguna decisión cambia después de esta reunión, se actualiza este documento y, si
-> afecta a la arquitectura, se crea un ADR nuevo en `docs/adr/`. El histórico no se
-> reescribe: se añade.
+> Este documento no se firma: se actualiza. La versión válida es siempre la de `main`.

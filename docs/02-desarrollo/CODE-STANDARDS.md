@@ -4,7 +4,7 @@
 > **Objetivo:** que cualquier integrante pueda leer, revisar y modificar código de otro
 > servicio sin contexto adicional.
 > **Relación con otros documentos:** la arquitectura general está en
-> [ARCHITECTURE.md](ARCHITECTURE.md), la estrategia de pruebas en [TESTING.md](TESTING.md)
+> [ARCHITECTURE.md](../01-arquitectura/ARCHITECTURE.md), la estrategia de pruebas en [TESTING.md](TESTING.md)
 > y el empaquetado en [CONTAINERS.md](CONTAINERS.md).
 
 Estas reglas no son sugerencias de estilo. Se revisan en cada pull request y, cuando es
@@ -403,7 +403,7 @@ Reglas:
 - El último argumento puede ser un `Throwable` para incluir el *stack trace*.
 - Nunca se registran datos personales, tokens ni el *payload* completo de un evento.
 - `correlationId` en MDC y propagado por cabecera y por el sobre del evento
-  (ver [EVENTS.md](EVENTS.md)).
+  (ver [EVENTS.md](../01-arquitectura/EVENTS.md)).
 - Limpiar el MDC en `finally`: los hilos se reutilizan.
 
 ### 3.10. Streams y *fluent API*
@@ -652,7 +652,7 @@ Reglas de dependencia:
 
 - `@Transactional` en el **caso de uso**, no en el controlador ni en el adaptador.
 - El cambio de negocio y el `INSERT` en `outbox_event` van en la **misma transacción**
-  (ver [EVENTS.md](EVENTS.md)).
+  (ver [EVENTS.md](../01-arquitectura/EVENTS.md)).
 - El relay del outbox corre fuera de la transacción de negocio.
 
 ### 6.2. Mapeo entre capas
@@ -768,7 +768,7 @@ resilience4j:
 - Publicación **transaccional** vía outbox; nunca `send()` directo dentro del caso de uso.
 - Consumo **idempotente**: el mismo `eventId` dos veces produce el mismo estado.
 - Fallo de consumo: reintento de SQS y, tras el máximo, DLQ. No se descarta en silencio.
-- El detalle está en [EVENTS.md](EVENTS.md).
+- El detalle está en [EVENTS.md](../01-arquitectura/EVENTS.md).
 
 ### 8.4. Arranque tolerante
 

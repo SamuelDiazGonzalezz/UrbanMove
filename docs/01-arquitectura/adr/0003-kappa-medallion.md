@@ -65,5 +65,5 @@ log cuando hace falta reconstruir un mart.
 ## Referencias
 
 - Enunciado, sección 8.
-- [`docs/PLAN.md`](../PLAN.md), sección 12.
-- [`docs/ARCHITECTURE.md`](../ARCHITECTURE.md), sección 8.
+- [`docs/00-gestion/PLAN.md`](../../00-gestion/PLAN.md), sección 12.
+- [`docs/01-arquitectura/ARCHITECTURE.md`](../../01-arquitectura/ARCHITECTURE.md), sección 8.

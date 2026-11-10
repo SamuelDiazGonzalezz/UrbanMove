@@ -57,5 +57,5 @@ más valiosas para los microservicios, los eventos, el Data Lake y los marts.
 ## Referencias
 
 - Enunciado, sección 3.
-- [`docs/PLAN.md`](../PLAN.md), sección 24.
-- [`docs/ARCHITECTURE.md`](../ARCHITECTURE.md), sección 9.
+- [`docs/00-gestion/PLAN.md`](../../00-gestion/PLAN.md), sección 24.
+- [`docs/01-arquitectura/ARCHITECTURE.md`](../../01-arquitectura/ARCHITECTURE.md), sección 9.

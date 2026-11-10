@@ -61,5 +61,5 @@ Se adopta una estrategia **local-first**:
 ## Referencias
 
 - Enunciado, sección 9 (Despliegue).
-- [`docs/PLAN.md`](../PLAN.md), sección 6.
-- [`docs/ARCHITECTURE.md`](../ARCHITECTURE.md), sección 10.
+- [`docs/00-gestion/PLAN.md`](../../00-gestion/PLAN.md), sección 6.
+- [`docs/01-arquitectura/ARCHITECTURE.md`](../../01-arquitectura/ARCHITECTURE.md), sección 10.

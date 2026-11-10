@@ -80,6 +80,6 @@ contratos.
 
 ## Referencias
 
-- [`docs/DATA-ARCHITECTURE.md`](../DATA-ARCHITECTURE.md), secciones 6 y 13.
-- [`docs/PLAN.md`](../PLAN.md), secciones 6 y 23.
-- [`docs/ARCHITECTURE.md`](../ARCHITECTURE.md), sección 10.
+- [`docs/01-arquitectura/DATA-ARCHITECTURE.md`](../../01-arquitectura/DATA-ARCHITECTURE.md), secciones 6 y 13.
+- [`docs/00-gestion/PLAN.md`](../../00-gestion/PLAN.md), secciones 6 y 23.
+- [`docs/01-arquitectura/ARCHITECTURE.md`](../../01-arquitectura/ARCHITECTURE.md), sección 10.

@@ -62,5 +62,5 @@ vulnerabilidades.
 ## Referencias
 
 - Enunciado, secciones 3 y 4.1.
-- [`docs/PLAN.md`](../PLAN.md), sección 14.
-- [`docs/ARCHITECTURE.md`](../ARCHITECTURE.md), sección 11.
+- [`docs/00-gestion/PLAN.md`](../../00-gestion/PLAN.md), sección 14.
+- [`docs/01-arquitectura/ARCHITECTURE.md`](../../01-arquitectura/ARCHITECTURE.md), sección 11.

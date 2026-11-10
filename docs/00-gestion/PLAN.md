@@ -145,7 +145,7 @@ No incluye:
 `DemandHotspotDetected`, `RelocationOrderCreated`, `RelocationOrderCompleted`.
 
 Cada evento debe incluir identificador, timestamp, origen, tipo, versión de esquema y
-identificador de correlación. El catálogo completo está en [`EVENTS.md`](EVENTS.md).
+identificador de correlación. El catálogo completo está en [`EVENTS.md`](../01-arquitectura/EVENTS.md).
 
 ### 5.4. Flujos obligatorios de la defensa
 
@@ -163,12 +163,12 @@ El guion detallado está en la sección 24.
 
 | Decisión | Elección | Alternativas descartadas | ADR |
 |---|---|---|---|
-| Estrategia de desarrollo | Local-first con Docker Compose + LocalStack | AWS desde el día 1; solo local sin cloud | [0001](adr/0001-local-first-docker-compose.md) |
-| Base de datos operacional | PostgreSQL por servicio | DynamoDB, MySQL, MongoDB | [0002](adr/0002-postgresql-vs-dynamodb.md) |
-| Topología de base de datos | Dos instancias RDS: operacional (13 BD: 12 de servicio + `keycloak_db`) y analítica (1 BD). Plan B: una instancia con 14 BD | Una sola instancia desde el inicio, 13 instancias, Aurora Serverless | [0006](adr/0006-dos-instancias-rds.md) |
-| Organización analítica | Kappa + Medallón (raw/trusted/curated) | Lambda architecture, batch-only, Data Mesh | [0003](adr/0003-kappa-medallion.md) |
-| Identidad | Keycloak local / Cognito AWS + JWT | Login propio, Spring Authorization Server | [0004](adr/0004-keycloak-vs-cognito.md) |
-| Dashboard | Grafana + PostgreSQL + Prometheus | React propio, Metabase, Superset | [0005](adr/0005-grafana-dashboard.md) |
+| Estrategia de desarrollo | Local-first con Docker Compose + LocalStack | AWS desde el día 1; solo local sin cloud | [0001](../01-arquitectura/adr/0001-local-first-docker-compose.md) |
+| Base de datos operacional | PostgreSQL por servicio | DynamoDB, MySQL, MongoDB | [0002](../01-arquitectura/adr/0002-postgresql-vs-dynamodb.md) |
+| Topología de base de datos | Dos instancias RDS: operacional (13 BD: 12 de servicio + `keycloak_db`) y analítica (1 BD). Plan B: una instancia con 14 BD | Una sola instancia desde el inicio, 13 instancias, Aurora Serverless | [0006](../01-arquitectura/adr/0006-dos-instancias-rds.md) |
+| Organización analítica | Kappa + Medallón (raw/trusted/curated) | Lambda architecture, batch-only, Data Mesh | [0003](../01-arquitectura/adr/0003-kappa-medallion.md) |
+| Identidad | Keycloak local / Cognito AWS + JWT | Login propio, Spring Authorization Server | [0004](../01-arquitectura/adr/0004-keycloak-vs-cognito.md) |
+| Dashboard | Grafana + PostgreSQL + Prometheus | React propio, Metabase, Superset | [0005](../01-arquitectura/adr/0005-grafana-dashboard.md) |
 | Mensajería | EventBridge + SQS + DLQ | Kafka/MSK, RabbitMQ, SNS puro | 0003 |
 | Cómputo | Docker Compose local; EC2/ECS solo si hay AWS | EKS desde el inicio | 0001 |
 | IaC | Terraform | CloudFormation, CDK, SAM | 0001 |
@@ -188,7 +188,7 @@ por microservicio. DynamoDB se ha considerado y se descarta para el núcleo porq
 
 DynamoDB queda como **ampliación opcional** para telemetría o para un read model de
 disponibilidad de altísima escritura. La justificación completa está en el
-[ADR 0002](adr/0002-postgresql-vs-dynamodb.md).
+[ADR 0002](../01-arquitectura/adr/0002-postgresql-vs-dynamodb.md).
 
 ### 6.2. Dos instancias RDS y plan B
 
@@ -198,8 +198,8 @@ mantener dos instancias, se colapsa a una sola instancia con las 14 bases: el c�
 cambia, solo la variable `DB_HOST` de `analytics` y de `mart-builder`.
 
 El detalle completo —topologías, permisos, coste, migración y disparadores del plan B—
-está en [`DATA-ARCHITECTURE.md`](DATA-ARCHITECTURE.md) y en el
-[ADR 0006](adr/0006-dos-instancias-rds.md).
+está en [`DATA-ARCHITECTURE.md`](../01-arquitectura/DATA-ARCHITECTURE.md) y en el
+[ADR 0006](../01-arquitectura/adr/0006-dos-instancias-rds.md).
 
 ---
 
@@ -359,7 +359,7 @@ stateDiagram-v2
 ## 11. Eventos
 
 El catálogo completo, el sobre común, las reglas de versionado, el patrón outbox, la
-idempotencia y la DLQ están en [`EVENTS.md`](EVENTS.md).
+idempotencia y la DLQ están en [`EVENTS.md`](../01-arquitectura/EVENTS.md).
 
 Resumen del sobre:
 
@@ -403,7 +403,7 @@ s3://urbanmove-datalake/curated/domain=demand/year=2026/month=11/day=10/
 
 Un solo bucket con tres prefijos (no *tags*). La inmutabilidad de `raw` se garantiza con
 claves únicas por `eventId`, Versioning y, en AWS, Object Lock. El detalle está en
-[`DATA-ARCHITECTURE.md`](DATA-ARCHITECTURE.md), sección 5.
+[`DATA-ARCHITECTURE.md`](../01-arquitectura/DATA-ARCHITECTURE.md), sección 5.
 
 ### 12.3. Data marts
 
@@ -422,7 +422,7 @@ Mínimo obligatorio: 4. Objetivo: 7. Si el tiempo aprieta, se priorizan
 
 Los marts se materializan en `analytics_db`, dentro de la instancia RDS analítica, y son
 **proyecciones reconstruibles**: se pueden borrar y recalcular desde los eventos. Ver
-[`DATA-ARCHITECTURE.md`](DATA-ARCHITECTURE.md), secciones 8 y 9.
+[`DATA-ARCHITECTURE.md`](../01-arquitectura/DATA-ARCHITECTURE.md), secciones 8 y 9.
 
 ### 12.4. Regla de recolocación
 
@@ -464,7 +464,7 @@ además habilitan el flujo de recolocación.
   `issuer-uri` y el JWKS.
 - El servicio `identity` actúa como fachada de administración de usuarios y roles; los
   tokens y sesiones los gestiona el IdP. Esta decisión está en el
-  [ADR 0004](adr/0004-keycloak-vs-cognito.md).
+  [ADR 0004](../01-arquitectura/adr/0004-keycloak-vs-cognito.md).
 
 ### 14.2. Secretos
 
@@ -543,7 +543,7 @@ expiración de una reserva.
 
 ## 17. CI/CD y observabilidad
 
-El diseño detallado está en [`CI-CD.md`](CI-CD.md).
+El diseño detallado está en [`CI-CD.md`](../03-operacion/CI-CD.md).
 
 Resumen:
 
@@ -575,7 +575,12 @@ urbanmobility/
 ├── infra/                 # Terraform + LocalStack
 ├── contracts/             # OpenAPI, AsyncAPI y JSON Schema
 ├── clients/               # Swagger/Postman + Grafana
-├── docs/                  # Plan, arquitectura, eventos, CI/CD y ADRs
+├── docs/                  # Documentación (ver docs/README.md)
+│   ├── 00-gestion/
+│   ├── 01-arquitectura/
+│   ├── 02-desarrollo/
+│   ├── 03-operacion/
+│   └── 04-enunciado/
 ├── scripts/               # Seed, demo y utilidades
 ├── .github/workflows/     # CI/CD
 ├── docker-compose.yml     # Fase 0
@@ -769,7 +774,7 @@ Si hay cuenta:
 - Evitar NAT Gateway, EKS, MSK y Redshift: son caros y no aportan al mínimo.
 - **Dos instancias RDS** (operacional y analítica) como objetivo. Si el crédito o los
   límites de la cuenta no lo permiten, **una sola instancia con las 14 bases**: el código
-  no cambia, solo `DB_HOST`. Ver [`DATA-ARCHITECTURE.md`](DATA-ARCHITECTURE.md),
+  no cambia, solo `DB_HOST`. Ver [`DATA-ARCHITECTURE.md`](../01-arquitectura/DATA-ARCHITECTURE.md),
   sección 13.
 - Si RDS no está disponible en la cuenta, PostgreSQL en la propia EC2 como último recurso.
 - Configurar AWS Budgets con alertas.

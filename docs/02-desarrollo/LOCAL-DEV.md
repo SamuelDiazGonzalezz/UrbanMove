@@ -208,7 +208,7 @@ docker run --rm -p 4566:4566 localstack/localstack:4.14.0
 ```
 
 > LocalStack no es AWS al 100 %. Hay diferencias de paridad en permisos, límites y
-> algunos comportamientos. Se documentan en `docs/DATA-ARCHITECTURE.md`.
+> algunos comportamientos. Se documentan en `docs/01-arquitectura/DATA-ARCHITECTURE.md`.
 
 #### AWS CLI v2
 
@@ -766,7 +766,7 @@ Cada integrante, al empezar:
 - [ ] Comprobar Keycloak en <http://localhost:8180>, Grafana en
       <http://localhost:3000> y LocalStack en <http://localhost:4566/_localstack/health>.
 - [ ] Ejecutar `./mvnw verify` cuando exista el POM padre.
-- [ ] Leer `docs/PLAN.md` y `docs/DATA-ARCHITECTURE.md`.
+- [ ] Leer `docs/00-gestion/PLAN.md` y `docs/01-arquitectura/DATA-ARCHITECTURE.md`.
 
 ---
 
@@ -788,11 +788,11 @@ Cada integrante, al empezar:
 
 ## 12. Referencias
 
-- [PLAN.md](PLAN.md): plan maestro y fases.
-- [ARCHITECTURE.md](ARCHITECTURE.md): arquitectura y despliegue.
-- [DATA-ARCHITECTURE.md](DATA-ARCHITECTURE.md): almacenamiento, eventos e inmutabilidad.
+- [PLAN.md](../00-gestion/PLAN.md): plan maestro y fases.
+- [ARCHITECTURE.md](../01-arquitectura/ARCHITECTURE.md): arquitectura y despliegue.
+- [DATA-ARCHITECTURE.md](../01-arquitectura/DATA-ARCHITECTURE.md): almacenamiento, eventos e inmutabilidad.
 - [CODE-STANDARDS.md](CODE-STANDARDS.md): nomenclatura, legibilidad, SOLID e inmutabilidad.
 - [TESTING.md](TESTING.md): pirámide, Testcontainers, LocalStack y contratos.
 - [CONTAINERS.md](CONTAINERS.md): imágenes, JVM, probes y Compose.
-- [EVENTS.md](EVENTS.md): catálogo de eventos.
-- [CI-CD.md](CI-CD.md): pipelines y quality gates.
+- [EVENTS.md](../01-arquitectura/EVENTS.md): catálogo de eventos.
+- [CI-CD.md](../03-operacion/CI-CD.md): pipelines y quality gates.

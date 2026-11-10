@@ -3,8 +3,8 @@
 > **Ámbito:** los 13 microservicios.
 > **Objetivo:** imágenes pequeñas, reproducibles y sin privilegios, con arranque y parada
 > limpios.
-> **Relacionados:** [LOCAL-DEV.md](LOCAL-DEV.md) (entorno), [CI-CD.md](CI-CD.md)
-> (pipeline), [ARCHITECTURE.md](ARCHITECTURE.md) (despliegue).
+> **Relacionados:** [LOCAL-DEV.md](LOCAL-DEV.md) (entorno), [CI-CD.md](../03-operacion/CI-CD.md)
+> (pipeline), [ARCHITECTURE.md](../01-arquitectura/ARCHITECTURE.md) (despliegue).
 
 El despliegue objetivo es **Docker Compose en local** y **EC2 con Compose o ECS Fargate**
 en AWS. EKS y Kubernetes quedan fuera del alcance por coste y complejidad; aun así, los
@@ -280,7 +280,7 @@ un `tmpfs` en lugar de dejar el sistema de ficheros escribible.
 | *Probes* | Los mismos endpoints de Actuator |
 
 Las tareas de ECS usan la misma imagen y los mismos endpoints que Compose: no hay dos
-formas de empaquetar. El detalle de la topología está en [ARCHITECTURE.md](ARCHITECTURE.md),
+formas de empaquetar. El detalle de la topología está en [ARCHITECTURE.md](../01-arquitectura/ARCHITECTURE.md),
 sección 10.
 
 ---

@@ -74,5 +74,5 @@ El enunciado menciona DynamoDB como ampliación valorable, pero no lo exige.
 ## Referencias
 
 - Enunciado, secciones 4.1 y 8.
-- [`docs/PLAN.md`](../PLAN.md), sección 6.1.
-- [`docs/ARCHITECTURE.md`](../ARCHITECTURE.md), secciones 6 y 9.
+- [`docs/00-gestion/PLAN.md`](../../00-gestion/PLAN.md), sección 6.1.
+- [`docs/01-arquitectura/ARCHITECTURE.md`](../../01-arquitectura/ARCHITECTURE.md), secciones 6 y 9.

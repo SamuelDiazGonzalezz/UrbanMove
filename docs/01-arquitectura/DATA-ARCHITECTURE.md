@@ -795,10 +795,10 @@ El paso inverso es igual de sencillo: crear la instancia, migrar `analytics_db` 
 
 ## 16. Referencias
 
-- [PLAN.md](PLAN.md): plan maestro, roadmap y reparto del equipo.
+- [PLAN.md](../00-gestion/PLAN.md): plan maestro, roadmap y reparto del equipo.
 - [ARCHITECTURE.md](ARCHITECTURE.md): C4, servicios, estados y despliegue.
 - [EVENTS.md](EVENTS.md): sobre de evento, catálogo, outbox, idempotencia y DLQ.
 - [ADR 0002](adr/0002-postgresql-vs-dynamodb.md): PostgreSQL frente a DynamoDB.
 - [ADR 0003](adr/0003-kappa-medallion.md): Kappa + Medallón.
 - [ADR 0006](adr/0006-dos-instancias-rds.md): dos instancias RDS con plan B.
-- Enunciado original: [urbanmove.pdf](urbanmove.pdf).
+- Enunciado original: [urbanmove.pdf](../04-enunciado/urbanmove.pdf).

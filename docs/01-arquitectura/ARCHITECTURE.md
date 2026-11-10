@@ -1,7 +1,7 @@
 # Arquitectura de UrbanMove
 
 > Documento técnico de referencia. El plan, el roadmap y el reparto están en
-> [`PLAN.md`](PLAN.md). El detalle de almacenamiento, eventos e inmutabilidad está en
+> [`PLAN.md`](../00-gestion/PLAN.md). El detalle de almacenamiento, eventos e inmutabilidad está en
 > [`DATA-ARCHITECTURE.md`](DATA-ARCHITECTURE.md).
 
 ---
@@ -245,8 +245,8 @@ Así no se pierde un evento si el bus está caído.
 > implementar cada servicio.
 
 Las convenciones de implementación (nomenclatura, estructura de paquetes, reglas de
-dependencia) están en [CODE-STANDARDS.md](CODE-STANDARDS.md); la estrategia de pruebas en
-[TESTING.md](TESTING.md) y el empaquetado en [CONTAINERS.md](CONTAINERS.md).
+dependencia) están en [CODE-STANDARDS.md](../02-desarrollo/CODE-STANDARDS.md); la estrategia de pruebas en
+[TESTING.md](../02-desarrollo/TESTING.md) y el empaquetado en [CONTAINERS.md](../02-desarrollo/CONTAINERS.md).
 
 ---
 

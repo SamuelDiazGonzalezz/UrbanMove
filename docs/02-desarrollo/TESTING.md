@@ -3,7 +3,7 @@
 > **Ámbito:** los 13 microservicios y las Lambdas.
 > **Objetivo:** que un fallo se detecte en segundos en local, no en la demo.
 > **Documentos relacionados:** [CODE-STANDARDS.md](CODE-STANDARDS.md) (diseño),
-> [LOCAL-DEV.md](LOCAL-DEV.md) (entorno y TDD), [CI-CD.md](CI-CD.md) (pipeline).
+> [LOCAL-DEV.md](LOCAL-DEV.md) (entorno y TDD), [CI-CD.md](../03-operacion/CI-CD.md) (pipeline).
 
 ---
 
@@ -294,7 +294,7 @@ no alarga la suite cuando la condición ya se cumple.
 - El sobre común (`eventId`, `eventType`, `occurredAt`, `correlationId`, `version`) es
   obligatorio y se comprueba en un test dedicado.
 - Un cambio incompatible sube `version` del evento, no se muta el existente
-  (ver [EVENTS.md](EVENTS.md)).
+  (ver [EVENTS.md](../01-arquitectura/EVENTS.md)).
 
 ### 9.3. Idempotencia
 
@@ -377,7 +377,7 @@ un objetivo: mide ejecución, no calidad.
 
 ## 13. Integración con CI
 
-El pipeline (ver [CI-CD.md](CI-CD.md)) ejecuta:
+El pipeline (ver [CI-CD.md](../03-operacion/CI-CD.md)) ejecuta:
 
 1. `./mvnw verify` con tests unitarios, de *slice* y de integración.
 2. Testcontainers sobre los *runners* de GitHub con Docker disponible.
