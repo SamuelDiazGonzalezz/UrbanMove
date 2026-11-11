@@ -33,6 +33,7 @@ Diseñar, implementar y desplegar una arquitectura académica que demuestre:
 - [Arquitectura](docs/01-arquitectura/ARCHITECTURE.md): C4, catálogo de servicios, propiedad de datos, estados y despliegue.
 - [Roadmap de servicios](docs/01-arquitectura/SERVICE-ROADMAP.md): orden, dependencias, camino crítico, reparto semanal y recortes.
 - [Arquitectura de datos](docs/01-arquitectura/DATA-ARCHITECTURE.md): S3, PostgreSQL, DynamoDB, Parquet, eventos, inmutabilidad, dos instancias RDS y plan B.
+- [OLTP y OLAP](docs/01-arquitectura/OLTP-OLAP.md): separación de carga transaccional y analítica, flujo de datos, topología local y AWS, consistencia y rendimiento.
 - [Entorno local](docs/02-desarrollo/LOCAL-DEV.md): herramientas, versiones, instalación, arranque de Docker, TDD y checklist de incorporación.
 - [Estándares de código](docs/02-desarrollo/CODE-STANDARDS.md): nomenclatura, legibilidad, SOLID, Ley de Deméter, inmutabilidad y reglas de arquitectura hexagonal.
 - [Pruebas](docs/02-desarrollo/TESTING.md): pirámide, Testcontainers, LocalStack, idempotencia, contratos y cobertura.

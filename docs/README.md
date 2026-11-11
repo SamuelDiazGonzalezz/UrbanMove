@@ -20,6 +20,7 @@ docs/
 │   ├── ARCHITECTURE.md           C4, servicios, estados y despliegue
 │   ├── DATA-ARCHITECTURE.md      PostgreSQL, S3, DynamoDB, marts y RDS
 │   ├── EVENTS.md                 sobre de evento, catálogo, outbox y DLQ
+│   ├── OLTP-OLAP.md              cargas transaccional y analítica, local y AWS
 │   ├── SERVICE-ROADMAP.md        orden, dependencias y recortes de servicios
 │   └── adr/                      decisiones arquitectónicas (0001-0006)
 ├── 02-desarrollo/
@@ -49,6 +50,7 @@ cualquier explorador de archivos. Los nombres de documento se mantienen en mayú
 | [ARCHITECTURE.md](01-arquitectura/ARCHITECTURE.md) | Servicios, comunicación, estados y despliegue | Antes de diseñar cualquier servicio |
 | [SERVICE-ROADMAP.md](01-arquitectura/SERVICE-ROADMAP.md) | Qué servicio va antes, de qué depende y qué se recorta | Al planificar cada semana |
 | [DATA-ARCHITECTURE.md](01-arquitectura/DATA-ARCHITECTURE.md) | Dónde vive cada dato y por qué | Antes de tocar persistencia o analítica |
+| [OLTP-OLAP.md](01-arquitectura/OLTP-OLAP.md) | Separación de carga transaccional y analítica, en local y en AWS | Antes de diseñar persistencia, marts o paneles |
 | [EVENTS.md](01-arquitectura/EVENTS.md) | Contrato de eventos, outbox, idempotencia y DLQ | Antes de publicar o consumir un evento |
 | [LOCAL-DEV.md](02-desarrollo/LOCAL-DEV.md) | Instalar y arrancar el entorno | El primer día de cada integrante |
 | [CODE-STANDARDS.md](02-desarrollo/CODE-STANDARDS.md) | Cómo se escribe y se revisa el código | Antes del primer PR y en cada revisión |
@@ -78,7 +80,8 @@ cualquier explorador de archivos. Los nombres de documento se mantienen en mayú
 ### 3.3. Antes de tocar datos o eventos
 
 1. [DATA-ARCHITECTURE.md](01-arquitectura/DATA-ARCHITECTURE.md).
-2. [EVENTS.md](01-arquitectura/EVENTS.md).
+2. [OLTP-OLAP.md](01-arquitectura/OLTP-OLAP.md).
+3. [EVENTS.md](01-arquitectura/EVENTS.md).
 
 ### 3.4. Antes de desplegar
 
@@ -162,6 +165,7 @@ claves. Los ejemplos usan valores de desarrollo (`urbanmove_dev_only`) y `.env.e
 | `ARCHITECTURE.md` | C | A y B al añadir un servicio |
 | `SERVICE-ROADMAP.md` | A | B y C al cambiar dependencias |
 | `DATA-ARCHITECTURE.md` | C | B al cambiar eventos |
+| `OLTP-OLAP.md` | C | B al cambiar marts o eventos |
 | `EVENTS.md` | B | A y C al añadir un evento |
 | `LOCAL-DEV.md` | C | Todos al cambiar una versión |
 | `CODE-STANDARDS.md` | A | Todos en cada PR |
@@ -199,4 +203,5 @@ que regenere el PDF.
 - [Reunión de arranque](00-gestion/KICKOFF.md)
 - [Plan maestro](00-gestion/PLAN.md)
 - [Roadmap de servicios](01-arquitectura/SERVICE-ROADMAP.md)
+- [OLTP y OLAP](01-arquitectura/OLTP-OLAP.md)
 - [Decisiones arquitectónicas](01-arquitectura/adr/)

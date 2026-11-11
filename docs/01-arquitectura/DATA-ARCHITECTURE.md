@@ -7,6 +7,8 @@
 > **Decisiones relacionadas:** [ADR 0002](adr/0002-postgresql-vs-dynamodb.md) (PostgreSQL),
 > [ADR 0003](adr/0003-kappa-medallion.md) (Kappa + Medallón),
 > [ADR 0006](adr/0006-dos-instancias-rds.md) (dos instancias RDS).
+> **Cargas:** el detalle de OLTP frente a OLAP está en
+> [`OLTP-OLAP.md`](OLTP-OLAP.md).
 
 ---
 

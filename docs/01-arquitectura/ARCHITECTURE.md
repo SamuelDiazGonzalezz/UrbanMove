@@ -4,7 +4,8 @@
 > [`PLAN.md`](../00-gestion/PLAN.md). El orden de implementación y las dependencias
 > entre servicios están en [`SERVICE-ROADMAP.md`](SERVICE-ROADMAP.md). El detalle de
 > almacenamiento, eventos e inmutabilidad está en
-> [`DATA-ARCHITECTURE.md`](DATA-ARCHITECTURE.md).
+> [`DATA-ARCHITECTURE.md`](DATA-ARCHITECTURE.md); la separación entre carga
+> transaccional y analítica, en [`OLTP-OLAP.md`](OLTP-OLAP.md).
 
 ---
 

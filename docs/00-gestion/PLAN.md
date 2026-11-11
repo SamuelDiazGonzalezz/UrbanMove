@@ -201,6 +201,15 @@ El detalle completo —topologías, permisos, coste, migración y disparadores d
 está en [`DATA-ARCHITECTURE.md`](../01-arquitectura/DATA-ARCHITECTURE.md) y en el
 [ADR 0006](../01-arquitectura/adr/0006-dos-instancias-rds.md).
 
+### 6.3. OLTP y OLAP
+
+La carga transaccional (reservas, viajes, disponibilidad) y la analítica (marts,
+paneles) se separan **siempre a nivel lógico**: ningún panel consulta una base
+operacional y ningún servicio escribe en `analytics_db`. En local conviven en un
+contenedor; en AWS van en dos instancias RDS. La discusión completa —definiciones,
+flujo de un evento, consistencia, rendimiento, topologías local y AWS y anti-patrones—
+está en [`OLTP-OLAP.md`](../01-arquitectura/OLTP-OLAP.md).
+
 ---
 
 ## 7. Arquitectura objetivo
