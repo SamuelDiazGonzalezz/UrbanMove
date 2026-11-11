@@ -130,7 +130,7 @@ Contratos que se cierran primero:
 | OpenAPI de `inventory` | `availability` |
 | OpenAPI de `availability` | `reservations` |
 | OpenAPI de `reservations` | `rides` |
-| Eventos `RideStarted` / `RideFinished` | `history` y marts |
+| Eventos `VehiclePickedUp` / `VehicleDroppedOff` / `TripRecorded` | `history` y marts |
 | Eventos `VehicleBatteryLow` / `IncidentReported` | `maintenance` |
 
 ---
@@ -161,7 +161,7 @@ No son milestones de GitHub: son **comprobaciones** que se pueden enseñar en la
 | **H1 — Walking skeleton** | `zones` | `GET /zones` responde, hay test y CI verde |
 | **H2 — Autenticación** | `identity` | Token con rol `user` y llamada protegida |
 | **H3 — Flujo de usuario** | 7 servicios | Registro → reserva → viaje → fin → historial |
-| **H4 — Eventos trazables** | outbox, S3, SQS | `RideFinished` aparece en `raw/` y en el historial |
+| **H4 — Eventos trazables** | event store, outbox, S3, SQS | `VehiclePickedUp` en `raw/` y `TripRecorded` en el historial |
 | **H5 — Flujo de mantenimiento** | `maintenance` + extras | Batería baja → orden → retirada → vuelta |
 | **H6 — Analítica** | `analytics` | Mart actualizado y panel en Grafana |
 | **H7 — Recolocación** | `relocation` | Déficit en `mart_demanda` → orden de recolocación |

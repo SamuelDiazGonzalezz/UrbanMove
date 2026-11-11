@@ -19,10 +19,14 @@ docs/
 ├── 01-arquitectura/
 │   ├── ARCHITECTURE.md           C4, servicios, estados y despliegue
 │   ├── DATA-ARCHITECTURE.md      PostgreSQL, S3, DynamoDB, marts y RDS
-│   ├── EVENTS.md                 sobre de evento, catálogo, outbox y DLQ
+│   ├── DATA-DICTIONARY.md        atributos de todas las tablas (documento vivo)
+│   ├── DATA-MODEL.md             relaciones entre tablas y grano de cada capa
+│   ├── EVENT-SOURCING.md         event store, proyecciones y RAW/TRUSTED/CURATED
+│   ├── EVENTS.md                 sobre de evento, catálogo por capa y DLQ
 │   ├── OLTP-OLAP.md              cargas transaccional y analítica, local y AWS
+│   ├── SERVICE-CLASSIFICATION.md qué servicio es OLTP y cuál OLAP
 │   ├── SERVICE-ROADMAP.md        orden, dependencias y recortes de servicios
-│   └── adr/                      decisiones arquitectónicas (0001-0006)
+│   └── adr/                      decisiones arquitectónicas (0001-0007)
 ├── 02-desarrollo/
 │   ├── LOCAL-DEV.md              herramientas, versiones y arranque local
 │   ├── CODE-STANDARDS.md         nomenclatura, legibilidad, SOLID e inmutabilidad
@@ -50,8 +54,12 @@ cualquier explorador de archivos. Los nombres de documento se mantienen en mayú
 | [ARCHITECTURE.md](01-arquitectura/ARCHITECTURE.md) | Servicios, comunicación, estados y despliegue | Antes de diseñar cualquier servicio |
 | [SERVICE-ROADMAP.md](01-arquitectura/SERVICE-ROADMAP.md) | Qué servicio va antes, de qué depende y qué se recorta | Al planificar cada semana |
 | [DATA-ARCHITECTURE.md](01-arquitectura/DATA-ARCHITECTURE.md) | Dónde vive cada dato y por qué | Antes de tocar persistencia o analítica |
+| [DATA-MODEL.md](01-arquitectura/DATA-MODEL.md) | Relaciones entre tablas y grano de cada capa | Antes de crear una tabla o un join |
+| [DATA-DICTIONARY.md](01-arquitectura/DATA-DICTIONARY.md) | Atributos, tipos y nulabilidad de cada tabla | Al escribir una migración Flyway |
+| [EVENT-SOURCING.md](01-arquitectura/EVENT-SOURCING.md) | Event store, proyecciones y capas RAW/TRUSTED/CURATED | Antes de modelar estado o un agregado |
 | [OLTP-OLAP.md](01-arquitectura/OLTP-OLAP.md) | Separación de carga transaccional y analítica, en local y en AWS | Antes de diseñar persistencia, marts o paneles |
-| [EVENTS.md](01-arquitectura/EVENTS.md) | Contrato de eventos, outbox, idempotencia y DLQ | Antes de publicar o consumir un evento |
+| [SERVICE-CLASSIFICATION.md](01-arquitectura/SERVICE-CLASSIFICATION.md) | Qué servicio es OLTP y cuál es OLAP | Al explicar la arquitectura o el reparto |
+| [EVENTS.md](01-arquitectura/EVENTS.md) | Contrato de eventos, publicación, idempotencia y DLQ | Antes de publicar o consumir un evento |
 | [LOCAL-DEV.md](02-desarrollo/LOCAL-DEV.md) | Instalar y arrancar el entorno | El primer día de cada integrante |
 | [CODE-STANDARDS.md](02-desarrollo/CODE-STANDARDS.md) | Cómo se escribe y se revisa el código | Antes del primer PR y en cada revisión |
 | [TESTING.md](02-desarrollo/TESTING.md) | Qué se prueba, con qué y con qué umbral | Antes de escribir el primer test |
@@ -79,9 +87,14 @@ cualquier explorador de archivos. Los nombres de documento se mantienen en mayú
 
 ### 3.3. Antes de tocar datos o eventos
 
-1. [DATA-ARCHITECTURE.md](01-arquitectura/DATA-ARCHITECTURE.md).
-2. [OLTP-OLAP.md](01-arquitectura/OLTP-OLAP.md).
-3. [EVENTS.md](01-arquitectura/EVENTS.md).
+1. [EVENT-SOURCING.md](01-arquitectura/EVENT-SOURCING.md) y
+   [ADR 0007](01-arquitectura/adr/0007-event-sourcing-raw-trusted-curated.md).
+2. [DATA-ARCHITECTURE.md](01-arquitectura/DATA-ARCHITECTURE.md).
+3. [OLTP-OLAP.md](01-arquitectura/OLTP-OLAP.md) y
+   [SERVICE-CLASSIFICATION.md](01-arquitectura/SERVICE-CLASSIFICATION.md).
+4. [DATA-MODEL.md](01-arquitectura/DATA-MODEL.md).
+5. [DATA-DICTIONARY.md](01-arquitectura/DATA-DICTIONARY.md).
+6. [EVENTS.md](01-arquitectura/EVENTS.md).
 
 ### 3.4. Antes de desplegar
 
@@ -165,7 +178,11 @@ claves. Los ejemplos usan valores de desarrollo (`urbanmove_dev_only`) y `.env.e
 | `ARCHITECTURE.md` | C | A y B al añadir un servicio |
 | `SERVICE-ROADMAP.md` | A | B y C al cambiar dependencias |
 | `DATA-ARCHITECTURE.md` | C | B al cambiar eventos |
+| `DATA-MODEL.md` | C | B al cambiar eventos |
+| `DATA-DICTIONARY.md` | C | B y A al cambiar una migración |
+| `EVENT-SOURCING.md` | C | A y B al cambiar el modelo de persistencia |
 | `OLTP-OLAP.md` | C | B al cambiar marts o eventos |
+| `SERVICE-CLASSIFICATION.md` | C | A al explicar la arquitectura |
 | `EVENTS.md` | B | A y C al añadir un evento |
 | `LOCAL-DEV.md` | C | Todos al cambiar una versión |
 | `CODE-STANDARDS.md` | A | Todos en cada PR |
@@ -203,5 +220,10 @@ que regenere el PDF.
 - [Reunión de arranque](00-gestion/KICKOFF.md)
 - [Plan maestro](00-gestion/PLAN.md)
 - [Roadmap de servicios](01-arquitectura/SERVICE-ROADMAP.md)
+- [Modelo de datos](01-arquitectura/DATA-MODEL.md)
+- [Diccionario de datos](01-arquitectura/DATA-DICTIONARY.md)
+- [Event sourcing](01-arquitectura/EVENT-SOURCING.md)
+- [Catálogo de eventos](01-arquitectura/EVENTS.md)
 - [OLTP y OLAP](01-arquitectura/OLTP-OLAP.md)
+- [Clasificación OLTP/OLAP](01-arquitectura/SERVICE-CLASSIFICATION.md)
 - [Decisiones arquitectónicas](01-arquitectura/adr/)

@@ -140,12 +140,17 @@ No incluye:
 ### 5.3. Eventos obligatorios
 
 `UserRegistered`, `VehiclePurchased`, `VehicleReserved`, `ReservationCancelled`,
-`ReservationExpired`, `RideStarted`, `RideFinished`, `VehicleBatteryLow`,
+`ReservationExpired`, `VehiclePickedUp`, `TripRecorded`, `VehicleBatteryLow`,
 `VehicleWithdrawnForMaintenance`, `VehicleReturnedToService`,
 `DemandHotspotDetected`, `RelocationOrderCreated`, `RelocationOrderCompleted`.
 
-Cada evento debe incluir identificador, timestamp, origen, tipo, versión de esquema y
-identificador de correlación. El catálogo completo está en [`EVENTS.md`](../01-arquitectura/EVENTS.md).
+`VehiclePickedUp` cubre el `RideStarted` de la rúbrica y `TripRecorded` cubre
+`RideFinished`: el pickup es un hecho físico RAW y el viaje correlacionado es TRUSTED.
+Ver [ADR 0007](../01-arquitectura/adr/0007-event-sourcing-raw-trusted-curated.md).
+
+Cada evento debe incluir identificador, timestamp, origen, tipo, versión de esquema, URI
+de esquema e identificador de correlación. El catálogo completo está en
+[`EVENTS.md`](../01-arquitectura/EVENTS.md).
 
 ### 5.4. Flujos obligatorios de la defensa
 
@@ -167,6 +172,7 @@ El guion detallado está en la sección 24.
 | Base de datos operacional | PostgreSQL por servicio | DynamoDB, MySQL, MongoDB | [0002](../01-arquitectura/adr/0002-postgresql-vs-dynamodb.md) |
 | Topología de base de datos | Dos instancias RDS: operacional (13 BD: 12 de servicio + `keycloak_db`) y analítica (1 BD). Plan B: una instancia con 14 BD | Una sola instancia desde el inicio, 13 instancias, Aurora Serverless | [0006](../01-arquitectura/adr/0006-dos-instancias-rds.md) |
 | Organización analítica | Kappa + Medallón (raw/trusted/curated) | Lambda architecture, batch-only, Data Mesh | [0003](../01-arquitectura/adr/0003-kappa-medallion.md) |
+| Persistencia operacional | Event sourcing append-only: `event_store` como verdad, proyecciones con vistas `*_current` | Tablas mutables con auditoría; event sourcing solo en `rides` | [0007](../01-arquitectura/adr/0007-event-sourcing-raw-trusted-curated.md) |
 | Identidad | Keycloak local / Cognito AWS + JWT | Login propio, Spring Authorization Server | [0004](../01-arquitectura/adr/0004-keycloak-vs-cognito.md) |
 | Dashboard | Grafana + PostgreSQL + Prometheus | React propio, Metabase, Superset | [0005](../01-arquitectura/adr/0005-grafana-dashboard.md) |
 | Mensajería | EventBridge + SQS + DLQ | Kafka/MSK, RabbitMQ, SNS puro | 0003 |
@@ -249,13 +255,15 @@ está en [`OLTP-OLAP.md`](../01-arquitectura/OLTP-OLAP.md).
 
 ### 7.1. Flujo de un evento
 
-1. Un servicio guarda el cambio de negocio y el evento en su tabla `outbox_event`
-   dentro de la misma transacción.
-2. Un relay publica el evento en EventBridge.
+1. Un servicio escribe el evento en su `event_store` y la intención de publicar en
+   `outbox_event`, dentro de la misma transacción.
+2. Un relay publica el evento en EventBridge y registra la publicación en
+   `event_publication` (sin `UPDATE`).
 3. EventBridge lo enruta a las colas SQS de los consumidores y a la Lambda de ingesta.
 4. Cada consumidor procesa de forma idempotente y, si falla, reintenta o va a DLQ.
 5. La Lambda de ingesta escribe el evento en S3 raw, particionado.
-6. Las Lambdas de marts construyen trusted/curated y actualizan los data marts.
+6. Las Lambdas de marts construyen trusted/curated y añaden un `build_id` nuevo a los
+   data marts.
 7. El dashboard consulta los marts y las métricas.
 
 ---
@@ -334,9 +342,9 @@ El enunciado exige estos estados para cada recurso:
 stateDiagram-v2
     [*] --> AVAILABLE
     AVAILABLE --> RESERVED: VehicleReserved
-    RESERVED --> IN_USE: RideStarted
+    RESERVED --> IN_USE: VehiclePickedUp
     RESERVED --> AVAILABLE: ReservationCancelled / ReservationExpired
-    IN_USE --> AVAILABLE: RideFinished
+    IN_USE --> AVAILABLE: VehicleDroppedOff
     AVAILABLE --> LOW_BATTERY: VehicleBatteryLow
     LOW_BATTERY --> WITHDRAWN: VehicleWithdrawnForMaintenance
     AVAILABLE --> WITHDRAWN: VehicleWithdrawnForMaintenance
@@ -353,9 +361,9 @@ stateDiagram-v2
 | Transición | Evento | Servicio que valida |
 |---|---|---|
 | `AVAILABLE → RESERVED` | `VehicleReserved` | `availability` |
-| `RESERVED → IN_USE` | `RideStarted` | `availability` |
+| `RESERVED → IN_USE` | `VehiclePickedUp` | `availability` |
 | `RESERVED → AVAILABLE` | `ReservationCancelled` / `ReservationExpired` | `availability` |
-| `IN_USE → AVAILABLE` | `RideFinished` | `availability` |
+| `IN_USE → AVAILABLE` | `VehicleDroppedOff` | `availability` |
 | `AVAILABLE → LOW_BATTERY` | `VehicleBatteryLow` | `availability` |
 | `LOW_BATTERY/AVAILABLE → WITHDRAWN` | `VehicleWithdrawnForMaintenance` | `availability` |
 | `WITHDRAWN → CHARGING/REPAIRING` | `MaintenanceStarted` | `maintenance` + `availability` |
@@ -375,10 +383,12 @@ Resumen del sobre:
 ```json
 {
   "eventId": "uuid",
-  "eventType": "RideFinished",
+  "eventType": "VehiclePickedUp",
   "eventVersion": 1,
-  "occurredAt": "2026-11-10T18:30:00Z",
-  "source": "rides-service",
+  "schema": "https://urbanmove.local/schemas/VehiclePickedUp.v1.json",
+  "occurredAt": "2026-11-11T18:10:00Z",
+  "recordedAt": "2026-11-11T18:10:03Z",
+  "source": "vehicle-456",
   "correlationId": "uuid",
   "causationId": "uuid",
   "producer": "rides-service",
@@ -401,18 +411,20 @@ Resumen del sobre:
 ### 12.2. Particionado
 
 ```text
-s3://urbanmove-datalake/raw/source=rides/event_type=RideFinished/year=2026/month=11/day=10/hour=18/
-s3://urbanmove-datalake/trusted/event_type=RideFinished/year=2026/month=11/day=10/
-s3://urbanmove-datalake/curated/domain=demand/year=2026/month=11/day=10/
+s3://urbanmove-datalake/raw/source=vehicle-456/event_type=VehiclePickedUp/year=2026/month=11/day=11/hour=18/
+s3://urbanmove-datalake/trusted/domain=trips/year=2026/month=11/day=11/
+s3://urbanmove-datalake/curated/domain=demand/year=2026/month=11/day=11/
 ```
 
-- `raw`: JSON/JSONL tal cual llega, inmutable.
-- `trusted`: validado, deduplicado por `eventId`, normalizado y en Parquet.
+- `raw`: JSON tal cual llega, inmutable. Un evento, un objeto.
+- `trusted`: validado, deduplicado por `eventId`, normalizado y en Parquet; contiene el
+  viaje correlacionado (`trip`), no eventos sueltos.
 - `curated`: agregados listos para los marts.
 
 Un solo bucket con tres prefijos (no *tags*). La inmutabilidad de `raw` se garantiza con
 claves únicas por `eventId`, Versioning y, en AWS, Object Lock. El detalle está en
-[`DATA-ARCHITECTURE.md`](../01-arquitectura/DATA-ARCHITECTURE.md), sección 5.
+[`DATA-ARCHITECTURE.md`](../01-arquitectura/DATA-ARCHITECTURE.md), sección 5, y
+[`EVENT-SOURCING.md`](../01-arquitectura/EVENT-SOURCING.md), sección 11.
 
 ### 12.3. Data marts
 
@@ -451,7 +463,7 @@ y la completa.
 | Lambda | Disparador | Entrada | Salida | Obligatoria |
 |---|---|---|---|---|
 | `reservation-expiration` | EventBridge Scheduler cada minuto | Reservas pendientes | `ReservationExpired` + liberación | Sí |
-| `maintenance-detection` | Evento de telemetría | `VehicleTelemetryReceived` | `VehicleBatteryLow` + orden | Sí |
+| `maintenance-detection` | Evento de telemetría | `TelemetryReceived` | `VehicleBatteryLow` + orden | Sí |
 | `analytics-ingest` | Evento de dominio | Cualquier evento | Objeto en S3 raw | Sí |
 | `mart-builder` | EventBridge Scheduler | Raw/trusted nuevos | Parquet + marts actualizados | Ampliación |
 | `demand-relocation` | EventBridge Scheduler | `mart_demanda` | `DemandHotspotDetected` + `RelocationOrderCreated` | Ampliación |
@@ -543,7 +555,7 @@ expiración de una reserva.
 
 | Cuello de botella | Mitigación |
 |---|---|
-| Escrituras concurrentes en reservas/disponibilidad | Bloqueo optimista (`@Version`), restricción única de reserva activa, idempotencia |
+| Escrituras concurrentes en reservas/disponibilidad | Versión esperada en `event_store`, stream `vehicle-reservation-<vehicleId>` e idempotencia |
 | Consultas analíticas pesadas | Data marts precalculados, caché, réplica de lectura, Athena/DuckDB |
 | Crecimiento del Data Lake | Particionado, Parquet comprimido, retención y reprocesamiento por ventana |
 | Saturación de logs | Niveles configurables, muestreo y retención |
@@ -620,7 +632,7 @@ Objetivo: que cualquier persona pueda levantar el entorno local y ver algo funci
 - [ ] Realm de Keycloak importado con roles y usuarios de desarrollo.
 - [ ] Scripts `dev.ps1`, `seed` y `cleanup`.
 - [ ] CI mínimo (build + tests + formato).
-- [ ] ADRs 0001-0005.
+- [ ] ADRs 0001-0007.
 - [ ] Contratos iniciales y `AsyncAPI` vacío.
 
 **Hecho cuando:** `docker compose up` levanta todo; un servicio de prueba responde; el
@@ -634,7 +646,8 @@ Objetivo: primer flujo completo end-to-end y walking skeleton.
       `reservations`, `rides`, `history`.
 - [ ] Keycloak + Spring Security + roles.
 - [ ] Eventos `UserRegistered`, `VehiclePurchased`, `VehicleReserved`,
-      `ReservationCancelled`, `RideStarted`, `RideFinished`.
+      `ReservationCancelled`, `VehiclePickedUp`, `VehicleDroppedOff`, `TripRecorded`.
+- [ ] Event store append-only + proyecciones con vistas `*_current`.
 - [ ] Outbox + EventBridge + SQS + DLQ.
 - [ ] Lambda `analytics-ingest` escribiendo raw en S3.
 - [ ] Primer mart (`mart_viajes` o `mart_reservas`).

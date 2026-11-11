@@ -33,12 +33,16 @@ Diseñar, implementar y desplegar una arquitectura académica que demuestre:
 - [Arquitectura](docs/01-arquitectura/ARCHITECTURE.md): C4, catálogo de servicios, propiedad de datos, estados y despliegue.
 - [Roadmap de servicios](docs/01-arquitectura/SERVICE-ROADMAP.md): orden, dependencias, camino crítico, reparto semanal y recortes.
 - [Arquitectura de datos](docs/01-arquitectura/DATA-ARCHITECTURE.md): S3, PostgreSQL, DynamoDB, Parquet, eventos, inmutabilidad, dos instancias RDS y plan B.
+- [Modelo de datos](docs/01-arquitectura/DATA-MODEL.md): diagrama de relaciones, cardinalidades y grano de cada capa.
+- [Diccionario de datos](docs/01-arquitectura/DATA-DICTIONARY.md): atributos, tipos y nulabilidad de todas las tablas; documento vivo.
+- [Event sourcing](docs/01-arquitectura/EVENT-SOURCING.md): event store append-only, proyecciones, snapshots y capas RAW/TRUSTED/CURATED.
+- [Clasificación OLTP/OLAP](docs/01-arquitectura/SERVICE-CLASSIFICATION.md): qué microservicio es transaccional y cuál analítico, con diagrama.
 - [OLTP y OLAP](docs/01-arquitectura/OLTP-OLAP.md): separación de carga transaccional y analítica, flujo de datos, topología local y AWS, consistencia y rendimiento.
 - [Entorno local](docs/02-desarrollo/LOCAL-DEV.md): herramientas, versiones, instalación, arranque de Docker, TDD y checklist de incorporación.
 - [Estándares de código](docs/02-desarrollo/CODE-STANDARDS.md): nomenclatura, legibilidad, SOLID, Ley de Deméter, inmutabilidad y reglas de arquitectura hexagonal.
 - [Pruebas](docs/02-desarrollo/TESTING.md): pirámide, Testcontainers, LocalStack, idempotencia, contratos y cobertura.
 - [Contenedores](docs/02-desarrollo/CONTAINERS.md): Dockerfile multi-stage, JVM, probes, Compose y seguridad de imagen.
-- [Eventos](docs/01-arquitectura/EVENTS.md): sobre de evento, catálogo, outbox, idempotencia y DLQ.
+- [Eventos](docs/01-arquitectura/EVENTS.md): sobre de evento, catálogo por capa, publicación append-only, idempotencia y DLQ.
 - [CI/CD](docs/03-operacion/CI-CD.md): pipelines, quality gates, evidencias y gestión de secretos.
 - [ADRs](docs/01-arquitectura/adr/): decisiones arquitectónicas iniciales.
 - [Enunciado original](docs/04-enunciado/urbanmove.pdf).
@@ -58,7 +62,10 @@ Antes de implementar nada, conviene validar estas decisiones:
 5. **Keycloak en local y Cognito en AWS** para el login.
 6. **Swagger/Postman + Grafana** como interfaces iniciales, sin frontend propio.
 7. **EventBridge + SQS + DLQ** como mecanismo de mensajería.
-8. **Terraform + GitHub Actions** para infraestructura y CI/CD.
+8. **Event sourcing inmutable**: `event_store` append-only como única verdad, proyecciones
+   con vistas `*_current` y capas RAW / TRUSTED / CURATED. Ver
+   [`docs/01-arquitectura/EVENT-SOURCING.md`](docs/01-arquitectura/EVENT-SOURCING.md).
+9. **Terraform + GitHub Actions** para infraestructura y CI/CD.
 
 Cada decisión está justificada en su ADR correspondiente dentro de [`docs/01-arquitectura/adr/`](docs/01-arquitectura/adr/).
 

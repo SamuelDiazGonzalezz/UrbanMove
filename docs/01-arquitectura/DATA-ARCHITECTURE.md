@@ -1,14 +1,19 @@
 # Arquitectura de datos de UrbanMove
 
 > **Estado:** propuesta para revisión del equipo.
-> **Última actualización:** 2026-11-10.
+> **Última actualización:** 2026-11-11.
 > **Ámbito:** almacenamiento operacional, Data Lake, eventos, data marts, inmutabilidad,
 > escalabilidad y tolerancia a fallos.
 > **Decisiones relacionadas:** [ADR 0002](adr/0002-postgresql-vs-dynamodb.md) (PostgreSQL),
 > [ADR 0003](adr/0003-kappa-medallion.md) (Kappa + Medallón),
-> [ADR 0006](adr/0006-dos-instancias-rds.md) (dos instancias RDS).
-> **Cargas:** el detalle de OLTP frente a OLAP está en
-> [`OLTP-OLAP.md`](OLTP-OLAP.md).
+> [ADR 0006](adr/0006-dos-instancias-rds.md) (dos instancias RDS),
+> [ADR 0007](adr/0007-event-sourcing-raw-trusted-curated.md) (event sourcing inmutable).
+> **Cargas:** el detalle de OLTP frente a OLAP está en [`OLTP-OLAP.md`](OLTP-OLAP.md) y
+> la clasificación por servicio en
+> [`SERVICE-CLASSIFICATION.md`](SERVICE-CLASSIFICATION.md).
+> **Modelo y eventos:** relaciones en [`DATA-MODEL.md`](DATA-MODEL.md), atributos en
+> [`DATA-DICTIONARY.md`](DATA-DICTIONARY.md) y event sourcing en
+> [`EVENT-SOURCING.md`](EVENT-SOURCING.md).
 
 ---
 
@@ -48,13 +53,14 @@
 
 | Término | Significado en este proyecto |
 |---|---|
-| **Evento** | Hecho ocurrido e inmutable, por ejemplo `RideFinished` |
+| **Evento** | Hecho ocurrido e inmutable, por ejemplo `VehiclePickedUp` |
 | **Mensaje** | El evento empaquetado mientras viaja por EventBridge o SQS |
-| **Outbox** | Tabla del servicio donde se guarda el evento en la misma transacción que el cambio de negocio |
-| **Event store** | Log append-only que permite reconstruir el estado del servicio. En este proyecto lo cumple `outbox_event` |
+| **Outbox** | Tabla del servicio donde se guarda la intención de publicar, en la misma transacción que el evento |
+| **Event store** | Log append-only que **es la verdad** del agregado; permite reconstruir el estado del servicio |
+| **Proyección** | Tabla derivada del event store, append-only por versión; la vista `*_current` da el estado actual |
+| **Snapshot** | Foto opcional y desechable del estado de un agregado; nunca sustituye al event store |
 | **Data Lake** | Archivo histórico de eventos en S3, organizado en capas |
 | **Data mart** | Tabla agregada y consultable, orientada a una pregunta de negocio |
-| **Proyección** | Tabla derivada de los eventos, reconstruible y desechable |
 | **RDS** | Servicio gestionado de AWS que alquila instancias de PostgreSQL (no es "una base de datos") |
 | **Prefijo** | Ruta dentro de un bucket S3 (`raw/`, `trusted/`). No confundir con *tags* |
 | **DLQ** | *Dead Letter Queue*: cola donde acaban los mensajes que fallan repetidamente |
@@ -93,13 +99,13 @@ flowchart LR
 
 | Almacén | Contenido | Pregunta que responde | Mutabilidad |
 |---|---|---|---|
-| RDS operacional | Estado actual del negocio | "¿Está libre la bici 42?" | Tablas de estado mutables; eventos append-only |
+| RDS operacional | Event store + proyecciones | "¿Está libre la bici 42?" | Event store append-only; proyecciones append-only por versión |
 | S3 Data Lake | Histórico completo de eventos | "¿Qué pasó el martes a las 18h?" | Inmutable |
-| RDS analítico | Agregados para el dashboard | "¿Cuántos viajes por zona?" | Proyecciones reconstruibles |
+| RDS analítico | Agregados para el dashboard | "¿Cuántos viajes por zona?" | Marts append-only por `build_id` |
 
 **Idea clave:** el evento no "se mueve" de un sitio a otro. Se **copia** en formas
-distintas, cada una con un propósito. El mismo `RideFinished` existe a la vez como fila
-en el outbox, como mensaje en SQS y como fichero en S3.
+distintas, cada una con un propósito. El mismo `VehiclePickedUp` existe a la vez como
+fila en `event_store`, como mensaje en SQS y como fichero en S3.
 
 ---
 
@@ -393,10 +399,11 @@ están en una instancia o en dos.
 
 ## 7. El ciclo de vida de un evento
 
-### 7.1. Traza completa: `RideFinished` a las 18:30
+### 7.1. Traza completa: `TripRecorded` a las 18:30
 
 | Momento | Dónde vive | Forma física | Duración |
 |---|---|---|---|
+| 18:30:00.100 | RDS `rides_db.event_store` | Fila | Permanente (append-only) |
 | 18:30:00.100 | RDS `rides_db.outbox_event` | Fila | Permanente (append-only) |
 | 18:30:00.400 | EventBridge | Mensaje gestionado | Milisegundos |
 | 18:30:00.600 | SQS `history-queue` | Mensaje en cola | Hasta 14 días |
@@ -415,9 +422,9 @@ sequenceDiagram
     participant L as Lambda ingesta
     participant S3 as S3 raw
 
-    R->>DB: BEGIN + INSERT ride + INSERT outbox_event
+    R->>DB: BEGIN + INSERT event_store + INSERT outbox_event
     DB-->>R: COMMIT
-    R->>EB: PutEvents(RideFinished)
+    R->>EB: PutEvents(TripRecorded)
     EB->>Q: copia a history-queue
     EB->>Q: copia a ingestion-queue
     Q->>H: mensaje
@@ -427,17 +434,21 @@ sequenceDiagram
     L->>Q: DELETE mensaje
 ```
 
-### 7.2. Los tres registros del mismo evento
+El pickup y el dropoff recorren el mismo camino como `VehiclePickedUp` y
+`VehicleDroppedOff`; el `TripRecorded` se añade cuando `rides` los correlaciona.
+
+### 7.2. Los cuatro registros del mismo evento
 
 | Sitio | Papel | Por qué no se puede sustituir |
 |---|---|---|
-| `outbox_event` (RDS) | Source of truth transaccional + event store | Necesita atomicidad con el cambio de negocio |
+| `event_store` (RDS) | Verdad del agregado | Guarda la versión y permite reconstruir el estado |
+| `outbox_event` (RDS) | Intención de publicar | Necesita atomicidad con la escritura del evento |
 | EventBridge + SQS | Transporte | S3 no hace push, no reintenta ni hace fan-out |
 | S3 `raw/` | Archivo analítico | La BD operacional no debe servir analítica ni guardar años de historia |
 
-**Decisión del proyecto:** `outbox_event` es append-only y **no se borra** al publicar;
-solo se marca `SENT`. Así cumple a la vez de outbox y de event store, sin añadir otra
-tabla.
+**Decisión del proyecto (ADR 0007):** `event_store` y `outbox_event` son append-only.
+Publicar **no** actualiza nada: se inserta una fila en `event_publication`. Así el
+diseño no depende de un `UPDATE` para saber qué se publicó.
 
 ### 7.3. EventBridge vs SQS
 
@@ -473,51 +484,97 @@ más y es lo que se evalúa.
 ### 8.1. Log append-only
 
 ```sql
-CREATE TABLE outbox_event (
-  event_id       UUID PRIMARY KEY,
-  event_type     TEXT        NOT NULL,
-  event_version  INT         NOT NULL,
-  occurred_at    TIMESTAMPTZ NOT NULL,
-  correlation_id UUID        NOT NULL,
-  payload        JSONB       NOT NULL,
-  status         TEXT        NOT NULL DEFAULT 'PENDING', -- PENDING | SENT
-  created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
+CREATE TABLE event_store (
+  global_position   BIGSERIAL PRIMARY KEY,
+  event_id          UUID        NOT NULL UNIQUE,
+  aggregate_type    TEXT        NOT NULL,
+  aggregate_id      UUID        NOT NULL,
+  aggregate_version INT         NOT NULL,
+  event_type        TEXT        NOT NULL,
+  event_version     INT         NOT NULL,
+  schema_uri        TEXT,
+  occurred_at       TIMESTAMPTZ NOT NULL,
+  recorded_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
+  correlation_id    UUID,
+  causation_id      UUID,
+  actor_id          UUID,
+  payload           JSONB       NOT NULL,
+  metadata          JSONB       NOT NULL DEFAULT '{}',
+  UNIQUE (aggregate_id, aggregate_version)
 );
--- Sin UPDATE de negocio y sin DELETE.
--- El único UPDATE permitido es marcar SENT.
+-- Sin UPDATE y sin DELETE de negocio.
+```
+
+La publicación se registra aparte, también sin `UPDATE`:
+
+```sql
+CREATE TABLE outbox_event (
+  event_id    UUID PRIMARY KEY REFERENCES event_store(event_id),
+  destination TEXT NOT NULL,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE event_publication (
+  publication_id UUID PRIMARY KEY,
+  event_id       UUID NOT NULL,
+  destination    TEXT NOT NULL,
+  published_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE (event_id, destination)
+);
 ```
 
 ### 8.2. Proyecciones reconstruibles
 
 ```text
-outbox_event (verdad, append-only)
+event_store (verdad, append-only)
       │
-      │ fold / GROUP BY
+      │ fold por global_position
       ▼
-ride (estado actual)          ← proyección
-vehicle_availability          ← proyección
-mart_viajes                   ← proyección
+trip                      ← versión 1, 2, 3…
+vehicle_availability
+      │
+      │ vista *_current
+      ▼
+trip_current / vehicle_availability_current   ← estado actual
 ```
 
-Cada proyección puede borrarse y reconstruirse:
+Cada proyección es append-only por versión:
 
 ```sql
-TRUNCATE mart_viajes;
-INSERT INTO mart_viajes (zona, hora, tipo, viajes_iniciados)
-SELECT z.zona, date_trunc('hour', e.occurred_at), v.tipo, count(*)
-FROM outbox_event e
-JOIN vehicle_asset v ON v.vehicle_id = (e.payload->>'vehicleId')::uuid
-JOIN zone z          ON z.zone_id   = (e.payload->>'originZoneId')::uuid
-WHERE e.event_type = 'RideStarted'
-GROUP BY 1, 2, 3;
+CREATE TABLE vehicle_availability (
+  projection_id  UUID PRIMARY KEY,
+  vehicle_id     UUID NOT NULL,
+  version        INT  NOT NULL,
+  state          TEXT NOT NULL,
+  zone_id        UUID,
+  reservation_id UUID,
+  trip_id        UUID,
+  battery_pct    INT,
+  valid_from     TIMESTAMPTZ NOT NULL,
+  UNIQUE (vehicle_id, version)
+);
+
+CREATE VIEW vehicle_availability_current AS
+SELECT DISTINCT ON (vehicle_id) *
+FROM vehicle_availability
+ORDER BY vehicle_id, version DESC;
+```
+
+Reconstruir:
+
+```sql
+TRUNCATE vehicle_availability;
+-- replay del event_store aplicando el fold
 ```
 
 ### 8.3. El test de la inmutabilidad
 
 > **¿Puedo borrar esta tabla y reconstruirla solo con eventos?**
 >
-> - **Sí** → es una proyección. Puede tener `UPDATE`; es una caché.
-> - **No** → es fuente de verdad. Debe ser append-only.
+> - **Sí** → es una proyección o un mart. Se puede truncar y regenerar.
+> - **No** → es fuente de verdad. Debe ser el `event_store`.
+
+Ninguna tabla de negocio se actualiza fila a fila: cada cambio es una versión nueva.
 
 ### 8.4. Por qué no `valor = valor + 1`
 
@@ -530,31 +587,37 @@ GROUP BY 1, 2, 3;
 
 Formas aceptables:
 
-1. **Recalcular** el agregado desde el log (`count(*)`, `GROUP BY`).
-2. **Incremental idempotente**: aplicar el evento solo si `event_id` no está en
-   `processed_event`, y guardar el agregado como caché reconstruible.
+1. **Recalcular** el agregado desde los eventos (`count(*)`, `GROUP BY`).
+2. **Build append-only**: cada ejecución crea un `build_id` nuevo con sus filas; la
+   vista `*_current` lee el último build correcto.
 
 En ambos casos, borrar y reprocesar da el mismo resultado.
 
 ### 8.5. La excepción: doble reserva
 
 La inmutabilidad pura no puede impedir por sí sola que dos usuarios reserven la misma
-bici. Se acepta una **proyección con restricción**:
+bici. Se resuelve con dos mecanismos del agregado, no con un `UPDATE` condicional:
 
-```sql
-CREATE UNIQUE INDEX ux_active_reservation
-  ON reservation (vehicle_id)
-  WHERE status = 'ACTIVE';
-```
+1. **Stream por vehículo** en `reservations`: `vehicle-reservation-<vehicleId>`.
+   `ReservationSlotHeld` y `ReservationSlotReleased` serializan las reservas de esa bici.
+2. **Versión esperada** en `event_store`: si dos comandos leen la versión 7 e intentan
+   escribir la 8, uno falla por `UNIQUE (aggregate_id, aggregate_version)` y se
+   reintenta.
 
-Sigue siendo reconstruible desde los eventos de reserva, pero el índice es el guardián
-de concurrencia. Es la excepción razonable y debe documentarse en el informe.
+La proyección `reservation_slot_current` permite consultar el slot activo, pero el
+guardián de concurrencia es la versión del agregado.
 
-### 8.6. Los data marts no son inmutables
+### 8.6. Los data marts son append-only
 
-Los marts son **proyecciones**: se actualizan, se recalculan y se truncan. Su garantía
-no es "no cambian", sino **"se reconstruyen sin pérdida"**. Se documenta cómo
-reconstruir cada uno.
+Los marts no son "inmutables por fila", pero tampoco se actualizan con `UPSERT`:
+
+- Cada ejecución crea un `build_id` con su ventana temporal.
+- Las filas del build se insertan una sola vez.
+- La vista `*_current` selecciona el último build con `status = 'SUCCESS'`.
+- Un build fallido se ignora; se reconstruye desde `trusted/`.
+
+La garantía no es "no cambian", sino **"se reconstruyen sin pérdida y sin duplicar"**.
+Detalle en [EVENT-SOURCING.md](EVENT-SOURCING.md), sección 12.
 
 ---
 
@@ -577,13 +640,16 @@ Mínimo del enunciado: 4. Objetivo: 7.
 ### 9.2. Quién los construye
 
 ```text
-S3 curated/ ──► Lambda mart-builder ──► analytics_db.mart_*
+S3 trusted/ ──► Lambda mart-builder ──► analytics_db.mart_* (nuevo build_id)
                      ▲
                      │ programado o por evento
 ```
 
-- Idempotente: reprocesar la misma ventana no duplica.
-- Incremental por ventana temporal cuando sea posible.
+- Cada ejecución genera un `build_id` y su ventana temporal.
+- Las filas se insertan una sola vez: **no hay `UPSERT` ni `UPDATE`**.
+- La vista `mart_*_current` lee el último build con `status = 'SUCCESS'`.
+- Reprocesar la misma ventana crea un build nuevo; el resultado es idéntico y
+  verificable.
 - Reconstrucción completa documentada para la demo de fallo.
 
 ### 9.3. Quién los lee
@@ -638,7 +704,7 @@ lo permitiría.
 
 | Cuello de botella | Mitigación |
 |---|---|
-| Escrituras concurrentes en reservas/disponibilidad | Bloqueo optimista (`@Version`), índice único parcial, idempotencia |
+| Escrituras concurrentes en reservas/disponibilidad | Versión esperada en `event_store`, stream `vehicle-reservation-<vehicleId>` e idempotencia |
 | Consultas analíticas pesadas | Instancia separada, marts precalculados, réplica de lectura |
 | Conexiones de 12 servicios | Pools pequeños, PgBouncer |
 | Crecimiento del lago | Particionado, Parquet, lifecycle, reprocesamiento por ventana |
@@ -800,14 +866,19 @@ El paso inverso es igual de sencillo: crear la instancia, migrar `analytics_db` 
 ## 15. Checklist de aceptación
 
 - [ ] Cada servicio tiene su base y su usuario; ningún usuario accede a otra base.
-- [ ] `outbox_event` es append-only y no se borra al publicar.
+- [ ] Cada servicio tiene `event_store`, `outbox_event`, `event_publication` y `processed_event`.
+- [ ] `event_store` y `outbox_event` son append-only; publicar inserta en `event_publication`.
+- [ ] Ninguna tabla de negocio se actualiza: cada cambio añade una versión.
+- [ ] Las vistas `*_current` devuelven la última versión.
 - [ ] EventBridge enruta a una cola SQS por consumidor.
 - [ ] Cada cola tiene DLQ y alarma.
 - [ ] `raw/` está protegido con Versioning y, en AWS, Object Lock.
 - [ ] La ingesta solo puede escribir en `raw/*`.
 - [ ] `trusted/` y `curated/` se generan desde `raw/`.
-- [ ] Cada mart se puede reconstruir y se ha probado al menos una vez.
+- [ ] RAW no lleva `tripId`, `zoneId`, duración ni coste.
+- [ ] Cada mart se reconstruye con un `build_id` nuevo y se ha probado al menos una vez.
 - [ ] Ningún agregado se actualiza con `+1` como fuente de verdad.
+- [ ] Ningún servicio operacional lee `s3://…/raw/` en tiempo de ejecución.
 - [ ] Grafana solo lee `analytics_db`.
 - [ ] Los escenarios de fallo de la sección 11.1 están demostrados.
 - [ ] El plan B está documentado y probado al menos sobre el papel.
@@ -819,8 +890,14 @@ El paso inverso es igual de sencillo: crear la instancia, migrar `analytics_db` 
 
 - [PLAN.md](../00-gestion/PLAN.md): plan maestro, roadmap y reparto del equipo.
 - [ARCHITECTURE.md](ARCHITECTURE.md): C4, servicios, estados y despliegue.
-- [EVENTS.md](EVENTS.md): sobre de evento, catálogo, outbox, idempotencia y DLQ.
+- [EVENTS.md](EVENTS.md): sobre de evento, catálogo por capa, publicación e idempotencia.
+- [EVENT-SOURCING.md](EVENT-SOURCING.md): event store, proyecciones, RAW/TRUSTED/CURATED.
+- [DATA-MODEL.md](DATA-MODEL.md): relaciones entre tablas y grano de cada capa.
+- [DATA-DICTIONARY.md](DATA-DICTIONARY.md): atributos completos.
+- [SERVICE-CLASSIFICATION.md](SERVICE-CLASSIFICATION.md): qué servicio es OLTP y cuál OLAP.
+- [OLTP-OLAP.md](OLTP-OLAP.md): cargas transaccional y analítica.
 - [ADR 0002](adr/0002-postgresql-vs-dynamodb.md): PostgreSQL frente a DynamoDB.
 - [ADR 0003](adr/0003-kappa-medallion.md): Kappa + Medallón.
 - [ADR 0006](adr/0006-dos-instancias-rds.md): dos instancias RDS con plan B.
+- [ADR 0007](adr/0007-event-sourcing-raw-trusted-curated.md): event sourcing inmutable.
 - Enunciado original: [urbanmove.pdf](../04-enunciado/urbanmove.pdf).

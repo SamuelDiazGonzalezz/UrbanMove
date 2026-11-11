@@ -4,8 +4,11 @@
 > [`PLAN.md`](../00-gestion/PLAN.md). El orden de implementación y las dependencias
 > entre servicios están en [`SERVICE-ROADMAP.md`](SERVICE-ROADMAP.md). El detalle de
 > almacenamiento, eventos e inmutabilidad está en
-> [`DATA-ARCHITECTURE.md`](DATA-ARCHITECTURE.md); la separación entre carga
-> transaccional y analítica, en [`OLTP-OLAP.md`](OLTP-OLAP.md).
+> [`DATA-ARCHITECTURE.md`](DATA-ARCHITECTURE.md) y
+> [`EVENT-SOURCING.md`](EVENT-SOURCING.md); la separación entre carga transaccional y
+> analítica, en [`OLTP-OLAP.md`](OLTP-OLAP.md) y
+> [`SERVICE-CLASSIFICATION.md`](SERVICE-CLASSIFICATION.md); las tablas, en
+> [`DATA-MODEL.md`](DATA-MODEL.md) y [`DATA-DICTIONARY.md`](DATA-DICTIONARY.md).
 
 ---
 
@@ -220,9 +223,11 @@ Ventajas: desacoplo, buffer ante picos, reintentos, DLQ y capacidad de reproducc
 
 ### 4.3. Patrón outbox
 
-Cada servicio con estado guarda el evento en `outbox_event` dentro de la misma
-transacción que el cambio de negocio. Un relay lo publica y lo marca como enviado.
-Así no se pierde un evento si el bus está caído.
+Cada servicio guarda el evento en `event_store` y su intención de publicación en
+`outbox_event`, en la misma transacción que el cambio de agregado. Un relay publica y
+registra la publicación en `event_publication`. **No se actualiza ningún estado**: la
+existencia de la fila en `event_publication` es la prueba de que se publicó. Así no se
+pierde un evento si el bus está caído.
 
 ---
 
@@ -234,12 +239,12 @@ Así no se pierde un evento si el bus está caído.
 | `user-profiles` | `/profiles` | `UserProfileUpdated` | `UserRegistered` |
 | `zones` | `/zones` | `ZoneCreated` | — |
 | `inventory` | `/vehicles`, `/acquisitions` | `VehiclePurchased`, `VehicleRetired` | — |
-| `availability` | `/availability` | `VehicleBecameAvailable`, `VehicleBecameUnavailable` | `VehicleReserved`, `RideStarted`, `RideFinished`, `VehicleBatteryLow`, `VehicleWithdrawnForMaintenance`, `VehicleReturnedToService` |
-| `telemetry` | `/telemetry` | `VehicleTelemetryReceived` | — |
-| `reservations` | `/reservations` | `VehicleReserved`, `ReservationCancelled`, `ReservationExpired` | `RideStarted`, `RideFinished` |
-| `rides` | `/rides` | `RideStarted`, `RideFinished` | `VehicleReserved` |
+| `availability` | `/availability` | `VehicleAvailabilityChanged` | `VehicleReserved`, `VehiclePickedUp`, `VehicleDroppedOff`, `VehicleBatteryLow`, `VehicleWithdrawnForMaintenance`, `VehicleReturnedToService` |
+| `telemetry` | `/telemetry` | `TelemetryReceived`, `VehicleBatteryLow` | — |
+| `reservations` | `/reservations` | `VehicleReserved`, `ReservationCancelled`, `ReservationExpired` | `VehiclePickedUp`, `VehicleDroppedOff` |
+| `rides` | `/rides` | `VehiclePickedUp`, `VehicleDroppedOff`, `TripRecorded` | `VehicleReserved` |
 | `incidents` | `/incidents` | `IncidentReported` | — |
-| `maintenance` | `/maintenance-orders` | `VehicleWithdrawnForMaintenance`, `VehicleReturnedToService`, `MaintenanceOrderCreated`, `MaintenanceOrderCompleted` | `VehicleBatteryLow`, `IncidentReported` |
+| `maintenance` | `/maintenance-orders` | `VehicleWithdrawnForMaintenance`, `VehicleReturnedToService`, `MaintenanceOrderOpened`, `MaintenanceOrderCompleted` | `VehicleBatteryLow`, `IncidentReported` |
 | `relocation` | `/relocation-orders` | `RelocationOrderCreated`, `RelocationOrderCompleted` | `DemandHotspotDetected` |
 | `history` | `/history` | — | Todos los eventos |
 | `analytics` | `/analytics` | — | — (lee marts) |
@@ -266,7 +271,7 @@ dependencia) están en [CODE-STANDARDS.md](../02-desarrollo/CODE-STANDARDS.md); 
 | `telemetry_reading` | `telemetry` | `reading_id`, `vehicle_id` |
 | `reservation` | `reservations` | `reservation_id` |
 | `reservation_attempt` | `reservations` | `attempt_id` |
-| `ride` | `rides` | `ride_id` |
+| `trip` | `rides` | `trip_id`, `vehicle_id`, `user_id` |
 | `incident` | `incidents` | `incident_id` |
 | `maintenance_order` | `maintenance` | `order_id` |
 | `relocation_order` | `relocation` | `order_id` |
@@ -287,9 +292,9 @@ El estado operativo lo posee `availability`. Los demás servicios publican event
 stateDiagram-v2
     [*] --> AVAILABLE
     AVAILABLE --> RESERVED: VehicleReserved
-    RESERVED --> IN_USE: RideStarted
+    RESERVED --> IN_USE: VehiclePickedUp
     RESERVED --> AVAILABLE: ReservationCancelled / ReservationExpired
-    IN_USE --> AVAILABLE: RideFinished
+    IN_USE --> AVAILABLE: VehicleDroppedOff
     AVAILABLE --> LOW_BATTERY: VehicleBatteryLow
     LOW_BATTERY --> WITHDRAWN: VehicleWithdrawnForMaintenance
     AVAILABLE --> WITHDRAWN: VehicleWithdrawnForMaintenance

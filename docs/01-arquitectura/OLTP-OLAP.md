@@ -5,9 +5,12 @@
 > **Ámbito:** diferencia entre carga transaccional y analítica, topología local, topología
 > AWS, flujo de datos, consistencia, rendimiento y reglas de operación.
 > **Documentos relacionados:** [DATA-ARCHITECTURE.md](DATA-ARCHITECTURE.md) (almacenes y
-> marts), [ARCHITECTURE.md](ARCHITECTURE.md) (servicios),
-> [EVENTS.md](EVENTS.md) (outbox y eventos), [ADR 0003](adr/0003-kappa-medallion.md)
-> (Kappa + Medallón) y [ADR 0006](adr/0006-dos-instancias-rds.md) (dos instancias RDS).
+> marts), [SERVICE-CLASSIFICATION.md](SERVICE-CLASSIFICATION.md) (qué servicio es OLTP y
+> cuál OLAP), [ARCHITECTURE.md](ARCHITECTURE.md) (servicios),
+> [EVENTS.md](EVENTS.md) (eventos), [EVENT-SOURCING.md](EVENT-SOURCING.md) (event store y
+> proyecciones), [ADR 0003](adr/0003-kappa-medallion.md) (Kappa + Medallón),
+> [ADR 0006](adr/0006-dos-instancias-rds.md) (dos instancias RDS) y
+> [ADR 0007](adr/0007-event-sourcing-raw-trusted-curated.md) (event sourcing).
 
 ---
 
@@ -35,7 +38,7 @@ mismo servidor.
 | | **OLTP** (*Online Transaction Processing*) | **OLAP** (*Online Analytical Processing*) |
 |---|---|---|
 | Pregunta | "¿Está libre la bici 42?" | "¿Cuántos viajes por zona y hora?" |
-| Operación típica | `INSERT`, `UPDATE`, `DELETE` de pocas filas | `SELECT` con `JOIN`, `GROUP BY`, agregaciones |
+| Operación típica | `INSERT` de eventos y lectura de la vista `*_current` | `SELECT` con `JOIN`, `GROUP BY`, agregaciones |
 | Alcance | Una entidad o una transacción | Millones de filas o todo el histórico |
 | Frecuencia | Muchas operaciones pequeñas por segundo | Pocas consultas grandes, programadas o bajo demanda |
 | Latencia objetivo | Milisegundos | Segundos o minutos; se admite caché |
@@ -43,7 +46,7 @@ mismo servidor.
 | Usuarios | Aplicaciones y APIs | Analistas, Grafana, informes, modelos |
 | Esquema | Normalizado, orientado a evitar duplicidad | Desnormalizado, orientado a leer rápido (estrella) |
 | Índices | Muchos y selectivos (B-tree, únicos parciales) | Pocos, sobre columnas de filtro y agrupación |
-| Mutabilidad | El estado cambia constantemente | Proyecciones reconstruibles |
+| Mutabilidad | Event store append-only; estado en proyecciones por versión | Marts append-only por `build_id` |
 
 ### 1.2. En UrbanMove
 
@@ -51,7 +54,7 @@ mismo servidor.
 |---|---|---|
 | **OLTP** | `identity_db`, `user_profiles_db`, `inventory_db`, `availability_db`, `reservations_db`, `rides_db`, `history_db`, `maintenance_db`, `relocation_db`, `zones_db`, `telemetry_db`, `incidents_db`, `keycloak_db` | Reservar una bici, iniciar un viaje, retirar un vehículo |
 | **OLAP** | `analytics_db` (marts) + S3 `curated/` | Viajes por zona, ocupación media, demanda por hora |
-| **Puente** | S3 `raw/` y `trusted/` | El evento `RideFinished` tal como llegó y ya validado |
+| **Puente** | S3 `raw/` y `trusted/` | `VehiclePickedUp` y `VehicleDroppedOff` tal como llegaron; `TripRecorded` ya validado |
 
 > **Matiz importante:** `history` es OLTP, no OLAP. Guarda el historial de negocio
 > consultable por usuario y por viaje, con las mismas garantías transaccionales que el
@@ -177,7 +180,7 @@ Para la demo, un retraso de un minuto es aceptable y se explica.
 
 - Validar reglas de negocio y restricciones.
 - Garantizar atomicidad: una reserva se crea o no se crea.
-- Evitar doble reserva con un índice único parcial.
+- Evitar doble reserva con versión esperada del agregado y stream por vehículo.
 - Publicar eventos mediante outbox en la misma transacción.
 - Responder con latencia baja a la API.
 
@@ -188,16 +191,17 @@ Para la demo, un retraso de un minuto es aceptable y se explica.
 | Normalización | Tercera forma normal como norma; duplicar solo con motivo |
 | Claves | `UUID` o `BIGSERIAL` según el servicio; nunca claves autoincrementales globales |
 | Relaciones | Dentro del servicio, claves foráneas; **entre servicios, nunca** |
-| Índices | Clave primaria, unicidad de negocio, claves de búsqueda frecuente |
+| Índices | Clave primaria, `UNIQUE (aggregate_id, aggregate_version)`, `(id, version)` de proyección y claves de búsqueda frecuente |
 | Restricciones | `NOT NULL`, `CHECK`, `UNIQUE`; la lógica no sustituye a la base |
-| Borrado | Lógico cuando el historial importa; físico solo en tablas auxiliares |
+| Borrado | No se borra: se emite un evento de corrección o baja |
 | Migraciones | Flyway versionado; nunca cambios a mano en producción |
 
 ### 4.3. Transacciones y aislamiento
 
 - Nivel por defecto: `READ COMMITTED`. Es suficiente para reservas y viajes.
-- La doble reserva **no** se resuelve con `SERIALIZABLE`, sino con un índice único
-  parcial sobre reservas activas. Menos contención y más claro.
+- La doble reserva **no** se resuelve con `SERIALIZABLE`, sino con la versión esperada del
+  agregado (`UNIQUE (aggregate_id, aggregate_version)`) y el stream
+  `vehicle-reservation-<vehicleId>`. Menos contención y más claro.
 - Transacciones **cortas**: prohibido llamar a un servicio externo dentro de una
   transacción abierta.
 - La publicación de eventos no se hace dentro del hilo de la transacción: se escribe en
@@ -524,8 +528,12 @@ para que la demo funcione y para que el diseño escale verticalmente sin reescri
 ## 13. Referencias
 
 - [DATA-ARCHITECTURE.md](DATA-ARCHITECTURE.md): almacenes, S3, Parquet, marts y RDS.
-- [EVENTS.md](EVENTS.md): sobre de evento, outbox, idempotencia y DLQ.
+- [SERVICE-CLASSIFICATION.md](SERVICE-CLASSIFICATION.md): clasificación OLTP/OLAP por servicio.
+- [EVENT-SOURCING.md](EVENT-SOURCING.md): event store, proyecciones y capas.
+- [EVENTS.md](EVENTS.md): catálogo de eventos, publicación, idempotencia y DLQ.
+- [DATA-MODEL.md](DATA-MODEL.md) y [DATA-DICTIONARY.md](DATA-DICTIONARY.md): tablas.
 - [ARCHITECTURE.md](ARCHITECTURE.md): catálogo de servicios y comunicación.
 - [ADR 0002](adr/0002-postgresql-vs-dynamodb.md): PostgreSQL como motor operacional.
 - [ADR 0003](adr/0003-kappa-medallion.md): Kappa + Medallón.
 - [ADR 0006](adr/0006-dos-instancias-rds.md): dos instancias RDS y plan B.
+- [ADR 0007](adr/0007-event-sourcing-raw-trusted-curated.md): event sourcing inmutable.

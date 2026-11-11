@@ -165,6 +165,7 @@ defecto: si nadie presenta un argumento nuevo, se adopta tal cual.
 | D18 | Idioma | Todo español, todo inglés | **Código e identificadores en inglés; documentación y commits en español** | Todos | ☐ |
 | D19 | Paquete raíz | `com.example`, `es.ucm` | **`com.urbanmove`** | Todos | ☐ |
 | D20 | IaC | CloudFormation, CDK, Terraform | **Terraform** cuando exista AWS; no bloquea la Fase 0 | C | ☐ |
+| D21 | Persistencia | Tablas mutables, event sourcing solo en `rides` | **Event sourcing inmutable**: `event_store` como verdad, proyecciones `*_current`, RAW/TRUSTED/CURATED | C | ☐ |
 
 ### 5.2. Decisiones de alcance
 
@@ -191,7 +192,7 @@ defecto: si nadie presenta un argumento nuevo, se adopta tal cual.
 
 > **Decisiones ya cerradas que no se reabren:** local-first (ADR 0001), PostgreSQL frente
 > a DynamoDB (0002), Kappa + Medallón (0003), Keycloak frente a Cognito (0004), Grafana
-> como dashboard (0005) y dos instancias RDS (0006).
+> como dashboard (0005), dos instancias RDS (0006) y event sourcing inmutable (0007).
 
 ---
 
@@ -302,8 +303,8 @@ responde, Keycloak emite token, un evento llega a `raw/` en S3 y el CI está ver
 
 ### Día 5 — Eventos y CI
 
-- [ ] Tabla `outbox_event` y relay con `SKIP LOCKED`.
-- [ ] Publicación en EventBridge.
+- [ ] Tablas `event_store`, `outbox_event`, `event_publication` y relay con `SKIP LOCKED`.
+- [ ] Publicación en EventBridge sin `UPDATE` de estado.
 - [ ] Consumidor SQS de `history` con `processed_event`.
 - [ ] Lambda `analytics-ingest` escribiendo en `raw/`.
 - [ ] Prueba de idempotencia.

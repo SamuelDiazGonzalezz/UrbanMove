@@ -180,7 +180,7 @@ Puntos importantes:
   esquema.
 - Se prueba el adaptador, no Spring Data. El `save()` de Spring Data no necesita test.
 - Los tests de repositorio deben incluir las consultas conflictivas: `SKIP LOCKED` del
-  outbox, unicidad de reserva activa y `ON CONFLICT` de idempotencia.
+  outbox, concurrencia por `aggregate_version` y `ON CONFLICT` de idempotencia.
 
 ### 6.1. Contenedor reutilizable
 
