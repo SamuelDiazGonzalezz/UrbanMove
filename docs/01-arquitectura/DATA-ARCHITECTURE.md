@@ -140,6 +140,26 @@ Solo como **ampliación opcional**:
 Nunca para reservas, viajes, historial ni marts. Justificación completa en el
 [ADR 0002](adr/0002-postgresql-vs-dynamodb.md).
 
+### 3.5. Local y AWS: mismo motor, distinto anfitrión
+
+La decisión **no es "PostgreSQL en local y otra cosa en la nube"**. El motor operacional
+es el mismo en los dos entornos; solo cambia quién lo aloja y cómo se aprovisiona.
+
+| Entorno | Datos operacionales | Data Lake | DynamoDB |
+|---|---|---|---|
+| **Local** | Un contenedor `postgres:16` con las 14 bases | LocalStack (S3 emulado) | No se usa; si se probara, LocalStack |
+| **AWS Academy** | RDS PostgreSQL: dos instancias o plan B de una | S3 real | Solo ampliación opcional de telemetría |
+| **AWS real (opcional)** | RDS Multi-AZ | S3 real | Solo ampliación opcional de telemetría |
+
+Consecuencia práctica: el código no cambia entre local y AWS. Solo cambia la
+configuración de conexión (`DB_HOST`, `DB_PORT`, `DB_NAME`). Por eso la decisión se
+toma una vez y vale para los dos entornos.
+
+Lo que sí es una decisión de nube es **dónde se aloja PostgreSQL** (ADR 0006: dos
+instancias RDS con plan B de una) y **cuándo se despliega** (ADR 0001: local primero,
+AWS después). La comparación PostgreSQL frente a DynamoDB es una decisión de **motor**,
+no de entorno.
+
 ---
 
 ## 4. Parquet: qué es y por qué se usa en el lago

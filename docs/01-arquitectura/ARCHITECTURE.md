@@ -1,7 +1,9 @@
 # Arquitectura de UrbanMove
 
 > Documento técnico de referencia. El plan, el roadmap y el reparto están en
-> [`PLAN.md`](../00-gestion/PLAN.md). El detalle de almacenamiento, eventos e inmutabilidad está en
+> [`PLAN.md`](../00-gestion/PLAN.md). El orden de implementación y las dependencias
+> entre servicios están en [`SERVICE-ROADMAP.md`](SERVICE-ROADMAP.md). El detalle de
+> almacenamiento, eventos e inmutabilidad está en
 > [`DATA-ARCHITECTURE.md`](DATA-ARCHITECTURE.md).
 
 ---

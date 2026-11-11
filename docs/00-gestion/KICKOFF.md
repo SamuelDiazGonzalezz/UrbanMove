@@ -16,7 +16,9 @@
 Cada integrante llega habiendo leído, al menos:
 
 - [ ] [PLAN.md](PLAN.md) — fases, reparto y riesgos.
+- [ ] [GITHUB-WORKFLOW.md](GITHUB-WORKFLOW.md) — issues, etiquetas y tablero.
 - [ ] [ARCHITECTURE.md](../01-arquitectura/ARCHITECTURE.md) — servicios y comunicación.
+- [ ] [SERVICE-ROADMAP.md](../01-arquitectura/SERVICE-ROADMAP.md) — orden y dependencias.
 - [ ] [DATA-ARCHITECTURE.md](../01-arquitectura/DATA-ARCHITECTURE.md) — PostgreSQL, S3 y marts.
 - [ ] [CODE-STANDARDS.md](../02-desarrollo/CODE-STANDARDS.md) — cómo se escribe el código.
 - [ ] [TESTING.md](../02-desarrollo/TESTING.md) — qué se prueba y con qué.
@@ -207,7 +209,7 @@ Responsabilidades transversales:
 
 - [ ] **Contratos:** A revisa REST, B revisa eventos, C valida esquemas.
 - [ ] **Integración semanal:** C convoca y prepara el entorno.
-- [ ] **Acta y tablero:** A mantiene issues y milestones al día.
+- [ ] **Acta y tablero:** A mantiene las issues al día, si el equipo decide usarlas (ver [GITHUB-WORKFLOW.md](GITHUB-WORKFLOW.md)).
 - [ ] **Demo:** B prepara el guion y los datos.
 - [ ] **Informe y PDF:** los tres escriben su parte; C compila.
 
@@ -408,7 +410,7 @@ Reparto orientativo:
 |---|---|---|---|---|
 | 1 | Validar las decisiones D1-D20 | Todos | Día de la reunión | ☐ |
 | 2 | Rellenar nombres en el reparto | Todos | Día de la reunión | ☐ |
-| 3 | Crear milestone `Fase 0` y 5 issues | A | +1 día | ☐ |
+| 3 | Decidir si se usan issues y crear las 5 de Fase 0 | A | +1 día | ☐ |
 | 4 | Escribir `.env.example` | C | +1 día | ☐ |
 | 5 | Crear `docker-compose.yml` de infraestructura | C | +2 días | ☐ |
 | 6 | Script de las 14 bases | C | +2 días | ☐ |

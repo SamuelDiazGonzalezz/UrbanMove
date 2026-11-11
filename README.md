@@ -27,9 +27,11 @@ Diseñar, implementar y desplegar una arquitectura académica que demuestre:
 ## 📚 Documentación
 
 - [Índice de documentación](docs/README.md): estructura de `docs/`, orden de lectura y cómo actualizarla.
+- [Flujo de trabajo en GitHub](docs/00-gestion/GITHUB-WORKFLOW.md): cuándo abrir una issue, etiquetas mínimas y comandos `gh`.
 - [Plan maestro](docs/00-gestion/PLAN.md): alcance, requisitos, arquitectura, roadmap, equipo de 3, checklist, demo y rúbrica.
 - [Reunión de arranque](docs/00-gestion/KICKOFF.md): agenda, decisiones clave, reparto, checkboxes y acta para la primera reunión del equipo.
 - [Arquitectura](docs/01-arquitectura/ARCHITECTURE.md): C4, catálogo de servicios, propiedad de datos, estados y despliegue.
+- [Roadmap de servicios](docs/01-arquitectura/SERVICE-ROADMAP.md): orden, dependencias, camino crítico, reparto semanal y recortes.
 - [Arquitectura de datos](docs/01-arquitectura/DATA-ARCHITECTURE.md): S3, PostgreSQL, DynamoDB, Parquet, eventos, inmutabilidad, dos instancias RDS y plan B.
 - [Entorno local](docs/02-desarrollo/LOCAL-DEV.md): herramientas, versiones, instalación, arranque de Docker, TDD y checklist de incorporación.
 - [Estándares de código](docs/02-desarrollo/CODE-STANDARDS.md): nomenclatura, legibilidad, SOLID, Ley de Deméter, inmutabilidad y reglas de arquitectura hexagonal.

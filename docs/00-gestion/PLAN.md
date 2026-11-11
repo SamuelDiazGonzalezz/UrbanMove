@@ -597,6 +597,11 @@ urbanmobility/
 Plazo objetivo: 6-8 semanas. Si la entrega es más ajustada, se recortan las fases 3 y 4
 y se mantienen los mínimos.
 
+> El orden concreto de servicios, sus dependencias y los recortes permitidos están en
+> [SERVICE-ROADMAP.md](../01-arquitectura/SERVICE-ROADMAP.md). Las tareas se trazan con
+> issues y etiquetas, no con milestones: ver
+> [GITHUB-WORKFLOW.md](GITHUB-WORKFLOW.md).
+
 ### Fase 0 — Cimientos (semana 1)
 
 Objetivo: que cualquier persona pueda levantar el entorno local y ver algo funcionando.

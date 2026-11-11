@@ -12,6 +12,7 @@
 docs/
 ├── README.md                     este índice
 ├── 00-gestion/
+│   ├── GITHUB-WORKFLOW.md        uso mínimo de issues y etiquetas
 │   ├── KICKOFF.md                reunión de arranque: decisiones, reparto y acta
 │   ├── KICKOFF.pdf               copia para imprimir
 │   └── PLAN.md                   plan maestro, fases, riesgos y rúbrica
@@ -19,6 +20,7 @@ docs/
 │   ├── ARCHITECTURE.md           C4, servicios, estados y despliegue
 │   ├── DATA-ARCHITECTURE.md      PostgreSQL, S3, DynamoDB, marts y RDS
 │   ├── EVENTS.md                 sobre de evento, catálogo, outbox y DLQ
+│   ├── SERVICE-ROADMAP.md        orden, dependencias y recortes de servicios
 │   └── adr/                      decisiones arquitectónicas (0001-0006)
 ├── 02-desarrollo/
 │   ├── LOCAL-DEV.md              herramientas, versiones y arranque local
@@ -41,9 +43,11 @@ cualquier explorador de archivos. Los nombres de documento se mantienen en mayú
 
 | Documento | Para qué sirve | Cuándo se lee |
 |---|---|---|
+| [GITHUB-WORKFLOW.md](00-gestion/GITHUB-WORKFLOW.md) | Cuándo abrir una issue, etiquetas mínimas y comandos `gh` | Antes de crear la primera tarea |
 | [KICKOFF.md](00-gestion/KICKOFF.md) | Cerrar decisiones, reparto y plan de la semana 1 | Antes y durante la primera reunión |
 | [PLAN.md](00-gestion/PLAN.md) | Alcance, fases, reparto, riesgos y demo | Al empezar y al planificar cada fase |
 | [ARCHITECTURE.md](01-arquitectura/ARCHITECTURE.md) | Servicios, comunicación, estados y despliegue | Antes de diseñar cualquier servicio |
+| [SERVICE-ROADMAP.md](01-arquitectura/SERVICE-ROADMAP.md) | Qué servicio va antes, de qué depende y qué se recorta | Al planificar cada semana |
 | [DATA-ARCHITECTURE.md](01-arquitectura/DATA-ARCHITECTURE.md) | Dónde vive cada dato y por qué | Antes de tocar persistencia o analítica |
 | [EVENTS.md](01-arquitectura/EVENTS.md) | Contrato de eventos, outbox, idempotencia y DLQ | Antes de publicar o consumir un evento |
 | [LOCAL-DEV.md](02-desarrollo/LOCAL-DEV.md) | Instalar y arrancar el entorno | El primer día de cada integrante |
@@ -80,6 +84,13 @@ cualquier explorador de archivos. Los nombres de documento se mantienen en mayú
 
 1. [CI-CD.md](03-operacion/CI-CD.md).
 2. [CONTAINERS.md](02-desarrollo/CONTAINERS.md), sección de despliegue.
+
+### 3.5. Antes de planificar la semana
+
+1. [SERVICE-ROADMAP.md](01-arquitectura/SERVICE-ROADMAP.md) — qué toca ahora y qué
+   bloquea.
+2. [GITHUB-WORKFLOW.md](00-gestion/GITHUB-WORKFLOW.md) — cómo se crea y se cierra una
+   issue.
 
 ---
 
@@ -145,9 +156,11 @@ claves. Los ejemplos usan valores de desarrollo (`urbanmove_dev_only`) y `.env.e
 
 | Documento | Responsable | Revisión |
 |---|---|---|
+| `GITHUB-WORKFLOW.md` | A | Todos al cambiar el reparto |
 | `KICKOFF.md` | A | Todos antes de la reunión |
 | `PLAN.md` | A | Todos al cerrar cada fase |
 | `ARCHITECTURE.md` | C | A y B al añadir un servicio |
+| `SERVICE-ROADMAP.md` | A | B y C al cambiar dependencias |
 | `DATA-ARCHITECTURE.md` | C | B al cambiar eventos |
 | `EVENTS.md` | B | A y C al añadir un evento |
 | `LOCAL-DEV.md` | C | Todos al cambiar una versión |
@@ -182,6 +195,8 @@ que regenere el PDF.
 ## 7. Enlaces rápidos
 
 - [README del repositorio](../README.md)
+- [Flujo de trabajo en GitHub](00-gestion/GITHUB-WORKFLOW.md)
 - [Reunión de arranque](00-gestion/KICKOFF.md)
 - [Plan maestro](00-gestion/PLAN.md)
+- [Roadmap de servicios](01-arquitectura/SERVICE-ROADMAP.md)
 - [Decisiones arquitectónicas](01-arquitectura/adr/)
