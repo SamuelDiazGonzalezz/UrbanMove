@@ -1,10 +1,11 @@
 # Plan maestro de UrbanMove
 
 > **Estado:** Fase 0 — cimientos y documentación.
-> **Última actualización:** 2026-11-10.
+> **Última actualización:** 2026-11-11.
 > **Equipo:** 3 personas.
 > **Plazo objetivo:** 6-8 semanas (1-2 meses).
 > **Repositorio:** <https://github.com/SamuelDiazGonzalezz/UrbanMove>.
+> **Plan corto y operativo:** [ACTION-PLAN.md](ACTION-PLAN.md).
 
 ---
 
@@ -43,6 +44,8 @@ reduce coste, riesgo y dependencia de permisos cloud.
 - [x] Inicializar git y conectar el repositorio de GitHub.
 - [x] Crear la estructura documental y este plan maestro.
 - [x] Documentar las decisiones iniciales en ADRs.
+- [x] Documentar event sourcing, modelo de datos, diccionario y clasificación OLTP/OLAP.
+- [x] Publicar un plan de acción semanal sin asignación nominal.
 - [x] Dejar el repositorio solo con documentación para la revisión del equipo.
 
 **Lo que no se ha hecho todavía:** no hay código de negocio, ni `docker-compose.yml`,
@@ -109,7 +112,7 @@ No incluye:
 | Interfaces diferenciadas | Usuario, mantenimiento/operaciones y dashboard | Diseñado |
 | Microservicios atómicos | 10, con los obligatorios del enunciado | Diseñado |
 | Historial independiente | Servicio propio, no una tabla secundaria | Diseñado |
-| Documentación arquitectónica | C4, secuencias, propiedad de datos, APIs, eventos, 2 ADRs | En curso |
+| Documentación arquitectónica | C4, secuencias, propiedad de datos, OpenAPI, eventos, 2 ADRs | En curso |
 | Lambdas | 3 conectadas a eventos reales | Diseñado |
 | Mensajería | Al menos un bus/cola/tópico | Diseñado |
 | Data Lake | raw / trusted / curated | Diseñado |
@@ -273,7 +276,7 @@ está en [`OLTP-OLAP.md`](../01-arquitectura/OLTP-OLAP.md).
 | # | Servicio | Responsabilidad | Base de datos | Estado |
 |---|---|---|---|---|
 | 1 | `identity` | Registro, roles, sesión y fachada sobre el IdP | `identity_db` | Pendiente |
-| 2 | `user-profiles` | Perfil, preferencias y baja lógica | `profiles_db` | Pendiente |
+| 2 | `user-profiles` | Perfil, preferencias y baja lógica | `user_profiles_db` | Pendiente |
 | 3 | `zones` | Zonas, restricciones y metadatos geográficos | `zones_db` | Pendiente |
 | 4 | `inventory` | Activos físicos y adquisiciones | `inventory_db` | Pendiente |
 | 5 | `availability` | Estado operativo y zona actual | `availability_db` | Pendiente |
@@ -310,7 +313,7 @@ está en [`OLTP-OLAP.md`](../01-arquitectura/OLTP-OLAP.md).
 | `vehicle_availability` | `availability` | `reservations`, `rides`, `maintenance`, `analytics` |
 | `telemetry_reading` | `telemetry` | `maintenance`, `analytics` |
 | `reservation`, `reservation_attempt` | `reservations` | `rides`, `analytics`, `history` |
-| `ride` | `rides` | `history`, `analytics` |
+| `trip` | `rides` | `history`, `analytics` |
 | `incident` | `incidents` | `maintenance`, `history` |
 | `maintenance_order`, `maintenance_task` | `maintenance` | `availability`, `history`, `analytics` |
 | `relocation_order` | `relocation` | `history`, `analytics` |
@@ -619,9 +622,10 @@ Plazo objetivo: 6-8 semanas. Si la entrega es más ajustada, se recortan las fas
 y se mantienen los mínimos.
 
 > El orden concreto de servicios, sus dependencias y los recortes permitidos están en
-> [SERVICE-ROADMAP.md](../01-arquitectura/SERVICE-ROADMAP.md). Las tareas se trazan con
-> issues y etiquetas, no con milestones: ver
-> [GITHUB-WORKFLOW.md](GITHUB-WORKFLOW.md).
+> [SERVICE-ROADMAP.md](../01-arquitectura/SERVICE-ROADMAP.md). La vista corta —qué se hace
+> cada semana, en qué orden y con qué entregable— está en
+> [ACTION-PLAN.md](ACTION-PLAN.md). Las tareas se trazan con issues y etiquetas, no con
+> milestones: ver [GITHUB-WORKFLOW.md](GITHUB-WORKFLOW.md).
 
 ### Fase 0 — Cimientos (semana 1)
 
@@ -891,13 +895,15 @@ El informe debe incluir:
 
 ## 26. Próximos pasos inmediatos
 
-1. Crear el `docker-compose.yml` de Fase 0 (PostgreSQL, LocalStack, Keycloak, Grafana,
+El detalle semanal está en [ACTION-PLAN.md](ACTION-PLAN.md), sección 8. En orden:
+
+1. Validar las decisiones y el plan en la reunión de [KICKOFF.md](KICKOFF.md).
+2. Crear el `docker-compose.yml` de Fase 0 (PostgreSQL, LocalStack, Keycloak, Grafana y
    Prometheus).
-2. Crear el POM padre y la plantilla de microservicio hexagonal.
-3. Configurar Keycloak (realm, roles, usuarios de desarrollo).
-4. Configurar LocalStack (bucket S3, bus, colas y DLQ).
-5. Crear el CI mínimo de GitHub Actions.
-6. Implementar el primer servicio (`zones` o `identity`) y validar el flujo de auth.
-7. Empezar el flujo de usuario de la Fase 1.
+3. Crear el POM padre y la plantilla de microservicio hexagonal.
+4. Configurar Keycloak (realm, roles, usuarios) y LocalStack (bucket, bus, colas y DLQ).
+5. Crear el CI mínimo y el esqueleto de `contracts/`.
+6. Escribir el OpenAPI de `zones` y su JSON Schema; implementar `zones`.
+7. Empezar la Fase 1 con `identity` y el flujo de usuario.
 
 > Cuando la Fase 0 esté cerrada, actualizar este documento y marcar los checkboxes.

@@ -16,15 +16,17 @@
 Cada integrante llega habiendo leído, al menos:
 
 - [ ] [PLAN.md](PLAN.md) — fases, reparto y riesgos.
+- [ ] [ACTION-PLAN.md](ACTION-PLAN.md) — qué se hace cada semana y en qué orden.
 - [ ] [GITHUB-WORKFLOW.md](GITHUB-WORKFLOW.md) — issues, etiquetas y tablero.
 - [ ] [ARCHITECTURE.md](../01-arquitectura/ARCHITECTURE.md) — servicios y comunicación.
 - [ ] [SERVICE-ROADMAP.md](../01-arquitectura/SERVICE-ROADMAP.md) — orden y dependencias.
 - [ ] [DATA-ARCHITECTURE.md](../01-arquitectura/DATA-ARCHITECTURE.md) — PostgreSQL, S3 y marts.
+- [ ] [EVENT-SOURCING.md](../01-arquitectura/EVENT-SOURCING.md) — event store y capas.
 - [ ] [CODE-STANDARDS.md](../02-desarrollo/CODE-STANDARDS.md) — cómo se escribe el código.
 - [ ] [TESTING.md](../02-desarrollo/TESTING.md) — qué se prueba y con qué.
 - [ ] [LOCAL-DEV.md](../02-desarrollo/LOCAL-DEV.md) — qué instalar y cómo arrancar.
 - [ ] [CONTAINERS.md](../02-desarrollo/CONTAINERS.md) — cómo se empaqueta.
-- [ ] [EVENTS.md](../01-arquitectura/EVENTS.md) — eventos, outbox e idempotencia.
+- [ ] [EVENTS.md](../01-arquitectura/EVENTS.md) — eventos, publicación e idempotencia.
 
 Si alguien no ha podido leer todo, se lee como mínimo la sección 5 de este documento
 (decisiones) antes de empezar.
@@ -255,6 +257,8 @@ Reglas de convivencia:
 **Criterio de fin de semana:** `docker compose --profile infra up` funciona, `zones`
 responde, Keycloak emite token, un evento llega a `raw/` en S3 y el CI está verde.
 
+La secuencia completa de las 8 semanas está en [ACTION-PLAN.md](ACTION-PLAN.md).
+
 ### Día 1 — Repositorio y Compose
 
 - [ ] Crear estructura `services/`, `lambdas/`, `infra/`, `contracts/`, `clients/`, `scripts/`.
@@ -409,7 +413,7 @@ Reparto orientativo:
 
 | # | Acción | Dueño | Fecha límite | ¿Hecha? |
 |---|---|---|---|---|
-| 1 | Validar las decisiones D1-D20 | Todos | Día de la reunión | ☐ |
+| 1 | Validar las decisiones D1-D21 y el [ACTION-PLAN.md](ACTION-PLAN.md) | Todos | Día de la reunión | ☐ |
 | 2 | Rellenar nombres en el reparto | Todos | Día de la reunión | ☐ |
 | 3 | Decidir si se usan issues y crear las 5 de Fase 0 | A | +1 día | ☐ |
 | 4 | Escribir `.env.example` | C | +1 día | ☐ |

@@ -12,6 +12,7 @@
 docs/
 ├── README.md                     este índice
 ├── 00-gestion/
+│   ├── ACTION-PLAN.md            qué se hace cada semana, en orden
 │   ├── GITHUB-WORKFLOW.md        uso mínimo de issues y etiquetas
 │   ├── KICKOFF.md                reunión de arranque: decisiones, reparto y acta
 │   ├── KICKOFF.pdf               copia para imprimir
@@ -48,6 +49,7 @@ cualquier explorador de archivos. Los nombres de documento se mantienen en mayú
 
 | Documento | Para qué sirve | Cuándo se lee |
 |---|---|---|
+| [ACTION-PLAN.md](00-gestion/ACTION-PLAN.md) | Qué se hace cada semana, en qué orden y qué entregable lo cierra | Al empezar la semana |
 | [GITHUB-WORKFLOW.md](00-gestion/GITHUB-WORKFLOW.md) | Cuándo abrir una issue, etiquetas mínimas y comandos `gh` | Antes de crear la primera tarea |
 | [KICKOFF.md](00-gestion/KICKOFF.md) | Cerrar decisiones, reparto y plan de la semana 1 | Antes y durante la primera reunión |
 | [PLAN.md](00-gestion/PLAN.md) | Alcance, fases, reparto, riesgos y demo | Al empezar y al planificar cada fase |
@@ -75,9 +77,10 @@ cualquier explorador de archivos. Los nombres de documento se mantienen en mayú
 ### 3.1. Si acabas de entrar en el equipo
 
 1. [KICKOFF.md](00-gestion/KICKOFF.md) — contexto, decisiones y reparto.
-2. [PLAN.md](00-gestion/PLAN.md) — qué se construye y en qué orden.
-3. [ARCHITECTURE.md](01-arquitectura/ARCHITECTURE.md) — cómo encajan los servicios.
-4. [LOCAL-DEV.md](02-desarrollo/LOCAL-DEV.md) — cómo levantar el entorno.
+2. [ACTION-PLAN.md](00-gestion/ACTION-PLAN.md) — qué toca esta semana y en qué orden.
+3. [PLAN.md](00-gestion/PLAN.md) — alcance, fases y rúbrica.
+4. [ARCHITECTURE.md](01-arquitectura/ARCHITECTURE.md) — cómo encajan los servicios.
+5. [LOCAL-DEV.md](02-desarrollo/LOCAL-DEV.md) — cómo levantar el entorno.
 
 ### 3.2. Antes de escribir código
 
@@ -103,9 +106,11 @@ cualquier explorador de archivos. Los nombres de documento se mantienen en mayú
 
 ### 3.5. Antes de planificar la semana
 
-1. [SERVICE-ROADMAP.md](01-arquitectura/SERVICE-ROADMAP.md) — qué toca ahora y qué
-   bloquea.
-2. [GITHUB-WORKFLOW.md](00-gestion/GITHUB-WORKFLOW.md) — cómo se crea y se cierra una
+1. [ACTION-PLAN.md](00-gestion/ACTION-PLAN.md) — qué toca, en qué orden y cuándo se
+   considera hecho.
+2. [SERVICE-ROADMAP.md](01-arquitectura/SERVICE-ROADMAP.md) — qué depende de qué y qué
+   se puede recortar.
+3. [GITHUB-WORKFLOW.md](00-gestion/GITHUB-WORKFLOW.md) — cómo se crea y se cierra una
    issue.
 
 ---
@@ -172,6 +177,7 @@ claves. Los ejemplos usan valores de desarrollo (`urbanmove_dev_only`) y `.env.e
 
 | Documento | Responsable | Revisión |
 |---|---|---|
+| `ACTION-PLAN.md` | A | Todos al cerrar cada semana |
 | `GITHUB-WORKFLOW.md` | A | Todos al cambiar el reparto |
 | `KICKOFF.md` | A | Todos antes de la reunión |
 | `PLAN.md` | A | Todos al cerrar cada fase |
@@ -217,6 +223,7 @@ que regenere el PDF.
 
 - [README del repositorio](../README.md)
 - [Flujo de trabajo en GitHub](00-gestion/GITHUB-WORKFLOW.md)
+- [Plan de acción](00-gestion/ACTION-PLAN.md)
 - [Reunión de arranque](00-gestion/KICKOFF.md)
 - [Plan maestro](00-gestion/PLAN.md)
 - [Roadmap de servicios](01-arquitectura/SERVICE-ROADMAP.md)

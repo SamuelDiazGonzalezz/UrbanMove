@@ -27,6 +27,7 @@ Diseñar, implementar y desplegar una arquitectura académica que demuestre:
 ## 📚 Documentación
 
 - [Índice de documentación](docs/README.md): estructura de `docs/`, orden de lectura y cómo actualizarla.
+- [Plan de acción](docs/00-gestion/ACTION-PLAN.md): qué se hace cada semana, en qué orden y qué entregable lo cierra.
 - [Flujo de trabajo en GitHub](docs/00-gestion/GITHUB-WORKFLOW.md): cuándo abrir una issue, etiquetas mínimas y comandos `gh`.
 - [Plan maestro](docs/00-gestion/PLAN.md): alcance, requisitos, arquitectura, roadmap, equipo de 3, checklist, demo y rúbrica.
 - [Reunión de arranque](docs/00-gestion/KICKOFF.md): agenda, decisiones clave, reparto, checkboxes y acta para la primera reunión del equipo.

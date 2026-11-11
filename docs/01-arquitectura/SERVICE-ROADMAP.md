@@ -1,10 +1,11 @@
 # Roadmap de microservicios
 
 > **Estado:** propuesta para revisión del equipo.
-> **Última actualización:** 2026-11-10.
+> **Última actualización:** 2026-11-11.
 > **Ámbito:** qué servicio se construye antes, de qué depende y qué se recorta si el
 > plazo aprieta.
-> **Documentos relacionados:** [PLAN.md](../00-gestion/PLAN.md) (fases y alcance),
+> **Documentos relacionados:** [ACTION-PLAN.md](../00-gestion/ACTION-PLAN.md) (calendario
+> semanal), [PLAN.md](../00-gestion/PLAN.md) (fases y alcance),
 > [ARCHITECTURE.md](ARCHITECTURE.md) (catálogo y comunicación),
 > [GITHUB-WORKFLOW.md](../00-gestion/GITHUB-WORKFLOW.md) (cómo se convierte esto en
 > issues) y [DATA-ARCHITECTURE.md](DATA-ARCHITECTURE.md) (persistencia y marts).
@@ -135,17 +136,11 @@ Contratos que se cierran primero:
 
 ---
 
-## 6. Reparto semanal
+## 6. Secuencia semanal
 
-| Semana | A | B | C |
-|---|---|---|---|
-| 1 | POM, `zones`, CI | Keycloak, `identity` | Compose, LocalStack, Lambda ingest |
-| 2 | `user-profiles`, contrato de `reservations` | `inventory`, `availability` | `history`, ingest, primer mart |
-| 3 | `reservations`, `rides` | `availability` + eventos | `history`, Grafana |
-| 4-5 | `rides`, apoyo a mantenimiento | `telemetry`, `incidents`, `maintenance` | marts, `analytics` |
-| 6 | `user-profiles` (cierre), pruebas E2E | `maintenance` (cierre) | `relocation`, dashboard |
-| 7 | Fallos, idempotencia | Carga, DLQ | Observabilidad |
-| 8 | Informe, demo | Demo | PDF, limpieza |
+La secuencia corta, con objetivo y criterio de "hecho" por semana, está en
+[ACTION-PLAN.md](../00-gestion/ACTION-PLAN.md), sección 2. Este documento solo fija el
+orden de dependencias; no reparte nombres.
 
 El reparto por dominio está en [PLAN.md](../00-gestion/PLAN.md), sección 20, y los
 nombres reales se asignan en [KICKOFF.md](../00-gestion/KICKOFF.md), sección 6.
@@ -195,10 +190,10 @@ como demostración.
 Antes de marcar una issue de servicio como cerrada:
 
 - [ ] Contrato OpenAPI versionado en `contracts/`.
-- [ ] JSON Schema de sus eventos, si publica.
+- [ ] JSON Schema de sus eventos y entrada en `contracts/asyncapi/`.
 - [ ] Dominio con tests unitarios (JUnit 5 + AssertJ).
 - [ ] Persistencia con Testcontainers PostgreSQL; nunca H2.
-- [ ] Restricciones de unicidad donde toca (por ejemplo, doble reserva).
+- [ ] Concurrencia resuelta por versión del agregado donde toca (doble reserva).
 - [ ] Outbox transaccional si publica eventos.
 - [ ] Consumo idempotente si consume eventos (`processed_event`).
 - [ ] Dockerfile multi-stage y servicio en Compose.
@@ -211,6 +206,7 @@ Antes de marcar una issue de servicio como cerrada:
 
 ## 10. Enlaces rápidos
 
+- [Plan de acción](../00-gestion/ACTION-PLAN.md)
 - [Plan maestro](../00-gestion/PLAN.md)
 - [Reunión de arranque](../00-gestion/KICKOFF.md)
 - [Flujo de trabajo en GitHub](../00-gestion/GITHUB-WORKFLOW.md)

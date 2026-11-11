@@ -5,7 +5,7 @@
 > **Ámbito:** cómo se traza el trabajo con issues y etiquetas, y por qué **no** se usan
 > milestones ni Projects.
 > **Documentos relacionados:** [KICKOFF.md](KICKOFF.md) (reparto y primeras acciones),
-> [PLAN.md](PLAN.md) (fases) y
+> [ACTION-PLAN.md](ACTION-PLAN.md) (calendario semanal), [PLAN.md](PLAN.md) (fases) y
 > [SERVICE-ROADMAP.md](../01-arquitectura/SERVICE-ROADMAP.md) (orden de servicios).
 
 ---
@@ -66,7 +66,8 @@ Un **milestone** agrupa issues con una fecha límite y muestra el progreso:
 
 Es útil cuando hay muchas personas y varios equipos. Aquí no:
 
-- Las fases y sus fechas ya están en [PLAN.md](PLAN.md).
+- Las fases y sus fechas ya están en [PLAN.md](PLAN.md) y en el calendario semanal de
+  [ACTION-PLAN.md](ACTION-PLAN.md).
 - Con 3 personas, el progreso se ve mirando la lista de issues abiertas.
 - Un milestone desactualizado es peor que no tenerlo, y mantenerlo cuesta tiempo cada
   semana.
@@ -220,9 +221,9 @@ usando mal: se recorta, no se abandona.
 
 Es una opción válida. En ese caso:
 
-1. El **único** tablero es [PLAN.md](PLAN.md), sección 19 (fases) y
-   [SERVICE-ROADMAP.md](../01-arquitectura/SERVICE-ROADMAP.md), sección 6 (reparto
-   semanal).
+1. El **único** tablero es [ACTION-PLAN.md](ACTION-PLAN.md), sección 2 (calendario
+   semanal), y [SERVICE-ROADMAP.md](../01-arquitectura/SERVICE-ROADMAP.md) (orden de
+   dependencias).
 2. Cada lunes se revisa en voz alta: qué se cerró, qué se hace esta semana, qué bloquea.
 3. El acta de la reunión recoge los acuerdos en [KICKOFF.md](KICKOFF.md).
 4. Para el informe se usa el histórico de commits y PR, que ya existe.
