@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: urbanmove-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-urbanmove}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-urbanmove}
+      POSTGRES_DB: urbanmove_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infra/local/init-databases.sql:/docker-entrypoint-initdb.d/01-init-databases.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U urbanmove -d urbanmove_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - urbanmove-network
+
+  localstack:
+    image: localstack/localstack:3.0
+    container_name: urbanmove-localstack
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=s3,sqs,sns
+      - AWS_DEFAULT_REGION=eu-west-1
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    volumes:
+      - localstack_data:/var/lib/localstack
+      - ./infra/local/init-aws.sh:/etc/localstack/init/ready.d/init-aws.sh:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - urbanmove-network
+
+volumes:
+  postgres_data:
+  localstack_data:
+
+networks:
+  urbanmove-network:
+    name: urbanmove-network
+    driver: bridge
