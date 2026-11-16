@@ -2,9 +2,9 @@
 
 Sistema distribuido de movilidad urbana (bicicletas y patinetes eléctricos) para la asignatura **Computación en la Nube** del Grado en Ingeniería Informática (ULPGC).
 
-> **Estado:** Fase 0 — diseño y planificación.
-> Este repositorio contiene **únicamente documentación**. Todavía no hay código, infraestructura ni pipelines implementados. El objetivo es que el equipo revise y valide las decisiones antes de empezar a construir.
-
+> **Estado:** Fase 0 (MVP en curso).
+> El repositorio incluye documentación y un esqueleto/MVP local inicial (docker-compose, infra/, services/core-fleet) para validar un flujo básico end-to-end.
+> Consulta el [manual de pruebas del MVP](docs/02-desarrollo/MANUAL-PRUEBAS-MVP.md).
 ---
 
 ## 🎯 Objetivo
@@ -27,6 +27,7 @@ Diseñar, implementar y desplegar una arquitectura académica que demuestre:
 ## 📚 Documentación
 
 - [Índice de documentación](docs/README.md): estructura de `docs/`, orden de lectura y cómo actualizarla.
+- [Manual de pruebas del MVP](docs/02-desarrollo/MANUAL-PRUEBAS-MVP.md): cómo levantar el entorno local, usar la UI/API y verificar el flujo (reserva → viaje → SQS → Lambda → S3).
 - [Plan de acción](docs/00-gestion/ACTION-PLAN.md): qué se hace cada semana, en qué orden y qué entregable lo cierra.
 - [Flujo de trabajo en GitHub](docs/00-gestion/GITHUB-WORKFLOW.md): cuándo abrir una issue, etiquetas mínimas y comandos `gh`.
 - [Plan maestro](docs/00-gestion/PLAN.md): alcance, requisitos, arquitectura, roadmap, equipo de 3, checklist, demo y rúbrica.

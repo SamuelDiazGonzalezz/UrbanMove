@@ -30,6 +30,7 @@ docs/
 │   └── adr/                      decisiones arquitectónicas (0001-0007)
 ├── 02-desarrollo/
 │   ├── LOCAL-DEV.md              herramientas, versiones y arranque local
+?   ??? MANUAL-PRUEBAS-MVP.md     manual de usuario y pruebas del MVP local
 │   ├── CODE-STANDARDS.md         nomenclatura, legibilidad, SOLID e inmutabilidad
 │   ├── TESTING.md                pirámide, Testcontainers y contratos
 │   └── CONTAINERS.md             Dockerfile, JVM, probes y Compose
@@ -63,6 +64,7 @@ cualquier explorador de archivos. Los nombres de documento se mantienen en mayú
 | [SERVICE-CLASSIFICATION.md](01-arquitectura/SERVICE-CLASSIFICATION.md) | Qué servicio es OLTP y cuál es OLAP | Al explicar la arquitectura o el reparto |
 | [EVENTS.md](01-arquitectura/EVENTS.md) | Contrato de eventos, publicación, idempotencia y DLQ | Antes de publicar o consumir un evento |
 | [LOCAL-DEV.md](02-desarrollo/LOCAL-DEV.md) | Instalar y arrancar el entorno | El primer día de cada integrante |
+| [MANUAL-PRUEBAS-MVP.md](02-desarrollo/MANUAL-PRUEBAS-MVP.md) | Levantar, usar y probar el MVP (UI/API/SQS/Lambda/S3) | Al probar el flujo end-to-end del MVP |
 | [CODE-STANDARDS.md](02-desarrollo/CODE-STANDARDS.md) | Cómo se escribe y se revisa el código | Antes del primer PR y en cada revisión |
 | [TESTING.md](02-desarrollo/TESTING.md) | Qué se prueba, con qué y con qué umbral | Antes de escribir el primer test |
 | [CONTAINERS.md](02-desarrollo/CONTAINERS.md) | Cómo se empaqueta y se ejecuta un servicio | Antes de crear el primer Dockerfile |
