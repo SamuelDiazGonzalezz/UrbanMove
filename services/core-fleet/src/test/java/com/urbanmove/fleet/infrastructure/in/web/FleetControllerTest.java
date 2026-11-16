@@ -6,6 +6,7 @@ import com.urbanmove.fleet.domain.model.Vehicle;
 import com.urbanmove.fleet.domain.model.VehicleStatus;
 import com.urbanmove.fleet.domain.model.VehicleType;
 import com.urbanmove.fleet.domain.port.in.GetVehiclesUseCase;
+import com.urbanmove.fleet.domain.port.in.ManageRidesUseCase;
 import com.urbanmove.fleet.domain.port.in.ReserveVehicleUseCase;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -40,6 +41,9 @@ class FleetControllerTest {
 
     @MockBean
     private ReserveVehicleUseCase reserveVehicleUseCase;
+
+    @MockBean
+    private ManageRidesUseCase manageRidesUseCase;
 
     @Test
     @DisplayName("GET /api/v1/vehicles devuelve lista de vehículos")
