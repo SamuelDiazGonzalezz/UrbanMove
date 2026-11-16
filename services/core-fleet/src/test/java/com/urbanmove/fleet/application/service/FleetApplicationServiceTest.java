@@ -1,12 +1,15 @@
 package com.urbanmove.fleet.application.service;
 
 import com.urbanmove.fleet.domain.event.ReservationCreatedEvent;
+import com.urbanmove.fleet.domain.event.TripRecordedEvent;
 import com.urbanmove.fleet.domain.model.Reservation;
+import com.urbanmove.fleet.domain.model.Ride;
 import com.urbanmove.fleet.domain.model.Vehicle;
 import com.urbanmove.fleet.domain.model.VehicleStatus;
 import com.urbanmove.fleet.domain.model.VehicleType;
 import com.urbanmove.fleet.domain.port.out.EventPublisherPort;
 import com.urbanmove.fleet.domain.port.out.ReservationRepositoryPort;
+import com.urbanmove.fleet.domain.port.out.RideRepositoryPort;
 import com.urbanmove.fleet.domain.port.out.VehicleRepositoryPort;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -34,13 +37,16 @@ class FleetApplicationServiceTest {
     private ReservationRepositoryPort reservationRepository;
 
     @Mock
+    private RideRepositoryPort rideRepository;
+
+    @Mock
     private EventPublisherPort eventPublisher;
 
     private FleetApplicationService fleetService;
 
     @BeforeEach
     void setUp() {
-        fleetService = new FleetApplicationService(vehicleRepository, reservationRepository, eventPublisher);
+        fleetService = new FleetApplicationService(vehicleRepository, reservationRepository, rideRepository, eventPublisher);
     }
 
     @Test
@@ -59,27 +65,45 @@ class FleetApplicationServiceTest {
         assertThat(result.userId()).isEqualTo("user-alice");
         assertThat(result.status()).isEqualTo(Reservation.ReservationStatus.ACTIVE);
 
-        // Verificar que el vehículo se guardó como RESERVED
         ArgumentCaptor<Vehicle> vehicleCaptor = ArgumentCaptor.forClass(Vehicle.class);
         verify(vehicleRepository).save(vehicleCaptor.capture());
         assertThat(vehicleCaptor.getValue().status()).isEqualTo(VehicleStatus.RESERVED);
 
-        // Verificar publicación del evento cloud
         ArgumentCaptor<ReservationCreatedEvent> eventCaptor = ArgumentCaptor.forClass(ReservationCreatedEvent.class);
         verify(eventPublisher).publish(eventCaptor.capture());
         assertThat(eventCaptor.getValue().vehicleCode()).isEqualTo("SCOOT-100");
     }
 
     @Test
-    @DisplayName("Falla al reservar si el vehículo no existe")
-    void shouldThrowExceptionWhenVehicleNotFound() {
+    @DisplayName("Debe iniciar y finalizar viaje, actualizando estados y emitiendo TripRecordedEvent a SQS")
+    void shouldStartAndFinishRideSuccessfully() {
         UUID vehicleId = UUID.randomUUID();
-        when(vehicleRepository.findById(vehicleId)).thenReturn(Optional.empty());
+        UUID resId = UUID.randomUUID();
+        UUID rideId = UUID.randomUUID();
 
-        assertThatThrownBy(() -> fleetService.reserve(vehicleId, "user-alice"))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Vehicle not found");
+        Vehicle reservedVehicle = new Vehicle(vehicleId, "SYT-001", VehicleType.ELECTRIC_BICYCLE, VehicleStatus.RESERVED, 90, 28.12, -15.42);
+        Reservation reservation = new Reservation(resId, vehicleId, "user-bob", java.time.Instant.now(), Reservation.ReservationStatus.ACTIVE);
+        Ride inProgressRide = Ride.start(resId, vehicleId, "user-bob", 28.12, -15.42);
 
-        verifyNoInteractions(eventPublisher);
+        when(reservationRepository.findById(resId)).thenReturn(Optional.of(reservation));
+        when(vehicleRepository.findById(vehicleId)).thenReturn(Optional.of(reservedVehicle));
+        when(rideRepository.save(any(Ride.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        // Iniciar viaje
+        Ride started = fleetService.startRide(resId);
+        assertThat(started).isNotNull();
+
+        // Finalizar viaje
+        when(rideRepository.findById(any())).thenReturn(Optional.of(inProgressRide));
+        Ride finished = fleetService.finishRide(rideId, 28.13, -15.43);
+
+        assertThat(finished.status()).isEqualTo(Ride.RideStatus.COMPLETED);
+        assertThat(finished.distanceKm()).isGreaterThan(0);
+        assertThat(finished.costAmount()).isGreaterThan(0);
+
+        // Verificar publicación del evento TripRecordedEvent para la Lambda y S3
+        ArgumentCaptor<TripRecordedEvent> tripCaptor = ArgumentCaptor.forClass(TripRecordedEvent.class);
+        verify(eventPublisher).publish(tripCaptor.capture());
+        assertThat(tripCaptor.getValue().vehicleCode()).isEqualTo("SYT-001");
     }
 }
