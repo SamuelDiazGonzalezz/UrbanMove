@@ -16,7 +16,7 @@ secrets/
 # --- Java / Maven ---
 target/
 build/
-out/
+/out/
 *.class
 *.jar
 *.war
