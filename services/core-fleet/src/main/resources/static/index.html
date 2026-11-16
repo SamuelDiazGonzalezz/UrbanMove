@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UrbanMove — Reserva de Flota Urbana</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Leaflet CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        #map { height: 420px; border-radius: 0.75rem; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen">
+    <div class="max-w-6xl mx-auto px-4 py-8">
+        <!-- Header -->
+        <header class="flex flex-col md:flex-row justify-between items-center mb-8 border-b border-slate-800 pb-4">
+            <div>
+                <h1 class="text-3xl font-extrabold text-emerald-400 tracking-tight flex items-center gap-2">
+                    ⚡ UrbanMove <span class="text-xs bg-emerald-950 text-emerald-400 border border-emerald-800 px-2 py-0.5 rounded-full font-mono">MVP v1.0</span>
+                </h1>
+                <p class="text-slate-400 text-sm mt-1">Explora vehículos en tiempo real y reserva sin esperas.</p>
+            </div>
+            <div class="mt-4 md:mt-0 flex items-center gap-3">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-900/50 text-emerald-300 border border-emerald-700/50">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> LocalStack & Postgres Conectados
+                </span>
+                <span class="text-xs bg-slate-800 px-3 py-1 rounded-full text-slate-400">Usuario Demo: <strong>demo-user</strong></span>
+            </div>
+        </header>
+
+        <!-- Main Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <!-- Left: Map & Status -->
+            <div class="lg:col-span-7 space-y-4">
+                <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700/80 shadow-lg">
+                    <h2 class="text-lg font-semibold text-slate-200 mb-3 flex items-center justify-between">
+                        <span>🗺️ Mapa de Flota en Vivo</span>
+                        <button onclick="loadVehicles()" class="text-xs bg-slate-700 hover:bg-slate-600 px-2.5 py-1 rounded text-slate-300 transition">↻ Refrescar</button>
+                    </h2>
+                    <div id="map"></div>
+                </div>
+
+                <!-- Live Notification -->
+                <div id="notification" class="hidden p-4 rounded-xl text-sm font-medium border transition-all"></div>
+            </div>
+
+            <!-- Right: Vehicle List -->
+            <div class="lg:col-span-5 space-y-4">
+                <div class="bg-slate-800/80 p-5 rounded-xl border border-slate-700/80 shadow-lg flex flex-col h-[520px]">
+                    <div class="flex items-center justify-between pb-3 border-b border-slate-700/60">
+                        <h2 class="text-lg font-semibold text-slate-200">🛴 Vehículos Disponibles</h2>
+                        <span id="vehicleCount" class="text-xs font-mono bg-slate-700 px-2 py-0.5 rounded text-emerald-400">0 encontrados</span>
+                    </div>
+
+                    <div id="vehicleList" class="overflow-y-auto space-y-3 mt-4 pr-1 flex-1">
+                        <p class="text-slate-500 text-sm text-center py-8">Cargando flota...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let map;
+        let markers = [];
+
+        function initMap() {
+            // Valencia Centro
+            map = L.map('map').setView([39.4699, -0.3763], 15);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+        }
+
+        async function loadVehicles() {
+            try {
+                const res = await fetch('/api/v1/vehicles');
+                const vehicles = await res.json();
+                renderVehicles(vehicles);
+            } catch (err) {
+                console.error('Error cargando vehículos:', err);
+                showNotification('Error al conectar con la API de flota.', 'error');
+            }
+        }
+
+        function renderVehicles(vehicles) {
+            const listEl = document.getElementById('vehicleList');
+            const countEl = document.getElementById('vehicleCount');
+            listEl.innerHTML = '';
+            
+            // Limpiar marcadores previos
+            markers.forEach(m => map.removeLayer(m));
+            markers = [];
+
+            const available = vehicles.filter(v => v.status === 'AVAILABLE');
+            countEl.textContent = `${available.length} disponibles / ${vehicles.length} total`;
+
+            if (vehicles.length === 0) {
+                listEl.innerHTML = '<p class="text-slate-500 text-sm text-center py-8">No hay vehículos registrados.</p>';
+                return;
+            }
+
+            vehicles.forEach(v => {
+                const isAvailable = v.status === 'AVAILABLE';
+                const typeIcon = v.type === 'SCOOTER' ? '🛴' : (v.type === 'ELECTRIC_BICYCLE' ? '⚡🚲' : '🚲');
+
+                // Tarjeta en lista
+                const card = document.createElement('div');
+                card.className = `p-4 rounded-lg border transition ${
+                    isAvailable ? 'bg-slate-900/90 border-slate-700 hover:border-emerald-500/50' : 'bg-slate-900/40 border-slate-800 opacity-60'
+                }`;
+
+                card.innerHTML = `
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="font-bold text-slate-100 flex items-center gap-1.5">
+                            <span class="text-lg">${typeIcon}</span> ${v.code}
+                        </span>
+                        <span class="text-xs px-2 py-0.5 rounded font-mono ${
+                            isAvailable ? 'bg-emerald-950 text-emerald-400 border border-emerald-800' : 'bg-amber-950 text-amber-400 border border-amber-800'
+                        }">${v.status}</span>
+                    </div>
+                    <div class="flex items-center justify-between text-xs text-slate-400 mb-3">
+                        <span>Batería: <strong class="${v.batteryPercentage < 20 ? 'text-rose-400' : 'text-emerald-400'}">${v.batteryPercentage}%</strong></span>
+                        <span class="text-slate-500">${v.type.toLowerCase().replace('_', ' ')}</span>
+                    </div>
+                    <button 
+                        onclick="reserveVehicle('${v.id}', '${v.code}')"
+                        ${!isAvailable ? 'disabled' : ''}
+                        class="w-full py-2 px-3 rounded text-xs font-semibold transition ${
+                            isAvailable 
+                            ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm shadow-emerald-900' 
+                            : 'bg-slate-800 text-slate-500 cursor-not-allowed'
+                        }">
+                        ${isAvailable ? 'Reservar Vehículo' : 'No disponible'}
+                    </button>
+                `;
+                listEl.appendChild(card);
+
+                // Marcador en Mapa
+                const marker = L.marker([v.latitude, v.longitude]).addTo(map);
+                marker.bindPopup(`
+                    <div style="color: #0f172a; font-family: sans-serif; font-size: 12px;">
+                        <strong>${typeIcon} ${v.code}</strong><br>
+                        Estado: <b>${v.status}</b><br>
+                        Batería: ${v.batteryPercentage}%<br>
+                        ${isAvailable ? `<button onclick="reserveVehicle('${v.id}', '${v.code}')" style="margin-top:6px; background:#059669; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">Reservar</button>` : ''}
+                    </div>
+                `);
+                markers.push(marker);
+            });
+        }
+
+        async function reserveVehicle(vehicleId, vehicleCode) {
+            try {
+                const res = await fetch('/api/v1/reservations', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        vehicleId: vehicleId,
+                        userId: 'demo-user-valencia'
+                    })
+                });
+
+                if (res.ok) {
+                    const reservation = await res.json();
+                    showNotification(`¡Éxito! Vehículo ${vehicleCode} reservado con ID: ${reservation.id.substring(0,8)}... Evento publicado en SQS (LocalStack).`, 'success');
+                    loadVehicles(); // Recargar estado inmediatamente
+                } else {
+                    const err = await res.json();
+                    showNotification(`No se pudo reservar: ${err.error || 'Error desconocido'}`, 'error');
+                }
+            } catch (err) {
+                console.error('Error al reservar:', err);
+                showNotification('Error de red al procesar la reserva.', 'error');
+            }
+        }
+
+        function showNotification(msg, type) {
+            const notif = document.getElementById('notification');
+            notif.textContent = msg;
+            notif.className = `p-4 rounded-xl text-sm font-medium border transition-all ${
+                type === 'success' ? 'bg-emerald-950/90 text-emerald-200 border-emerald-700' : 'bg-rose-950/90 text-rose-200 border-rose-700'
+            }`;
+            notif.classList.remove('hidden');
+            setTimeout(() => notif.classList.add('hidden'), 6000);
+        }
+
+        window.onload = () => {
+            initMap();
+            loadVehicles();
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,28 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: core-fleet-service
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/availability_db}
+    username: ${SPRING_DATASOURCE_USERNAME:urbanmove}
+    password: ${SPRING_DATASOURCE_PASSWORD:urbanmove}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 1
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+
+cloud:
+  aws:
+    region: ${AWS_DEFAULT_REGION:eu-west-1}
+    endpoint: ${AWS_ENDPOINT_URL:http://localhost:4566}
+    sqs:
+      queue-url: ${SQS_QUEUE_URL:http://sqs.eu-west-1.localhost.localstack.cloud:4566/000000000000/trip-recorded-queue}
