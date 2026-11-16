@@ -150,7 +150,7 @@ La guía detallada está en [KICKOFF.md](00-gestion/KICKOFF.md), sección 2.
 
 ### 4.4. Enlaces
 
-- Siempre relativos al documento que los contiene:
+- Siempre relativos al documento que los contiene (por ejemplo, desde `00-gestion/ACTION-PLAN.md`):
   - dentro de la misma carpeta: `[PLAN.md](PLAN.md)`;
   - a otra carpeta: `[EVENTS.md](../01-arquitectura/EVENTS.md)`.
 - Nunca enlaces absolutos a `github.com` para documentos del propio repositorio.
