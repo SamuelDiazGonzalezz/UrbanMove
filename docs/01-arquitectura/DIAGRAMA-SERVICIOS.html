@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Diagrama de servicios UrbanMove</title>
+  <style>
+    body { font-family: Arial, Helvetica, sans-serif; margin: 24px; color: #111; line-height: 1.35; }
+    h1,h2,h3 { color: #0b3d91; }
+    .note { font-size: 0.95em; color: #333; margin-bottom: 16px; }
+    ul { margin-top: 6px; }
+    table { border-collapse: collapse; width: 100%; margin: 12px 0 24px; font-size: 11.5px; }
+    th, td { border: 1px solid #bbb; padding: 6px 8px; vertical-align: top; }
+    th { background: #f2f6ff; }
+    .mermaid { margin: 12px 0 24px; }
+    .page-break { page-break-before: always; }
+    code { background: #f5f5f5; padding: 1px 4px; border-radius: 3px; }
+    @media print { body { margin: 12px; } }
+  </style>
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({ startOnLoad: true, theme: 'default', securityLevel: 'loose', flowchart: { htmlLabels: true, curve: 'basis' } });
+  </script>
+</head>
+<body>
+  <h1>Diagrama de servicios y conexiones (UrbanMove)</h1>
+  <p class="note">Basado en <code>ARCHITECTURE.md</code>, <code>SERVICE-CLASSIFICATION.md</code>, <code>EVENTS.md</code> y <code>DATA-ARCHITECTURE.md</code>.</p>
+
+  <h2>0. Leyenda rápida</h2>
+  <ul>
+    <li><strong>Microservicio:</strong> componente independiente con una responsabilidad concreta, su propia API/lógica y despliegue independiente.</li>
+    <li><strong><code>&lt;servicio&gt;_db</code>:</strong> base de datos <strong>PostgreSQL privada</strong> de ese microservicio. Solo ese servicio puede leer/escribir en ella; los demás se integran mediante APIs o eventos (nunca accediendo directamente a su BD).</li>
+    <li><strong>OLTP:</strong> servicios transaccionales que gestionan el estado operativo del negocio en tiempo real.</li>
+    <li><strong>OLAP:</strong> servicio analítico (<code>analytics</code>) orientado a consultas/agregados sobre marts, no a operaciones transaccionales.</li>
+    <li><strong>Evento:</strong> hecho ocurrido en pasado publicado en el bus (EventBridge → SQS) para desacoplar servicios y alimentar procesos asíncronos.</li>
+    <li><strong>Consumidor de evento:</strong> componente que reacciona al evento (otro microservicio, una Lambda o el pipeline analítico). <code>history</code> y <code>analytics-ingest</code> actúan como consumidores transversales de eventos de dominio.</li>
+  </ul>
+
+  <h2>1. Qué es cada componente</h2>
+  <table>
+    <thead><tr><th>Componente</th><th>Qué hace</th><th>Base de datos / almacén</th></tr></thead>
+    <tbody>
+      <tr><td><code>zones</code></td><td>Gestiona las zonas geográficas/operativas (áreas de uso, restricciones, etc.).</td><td><code>zones_db</code> (privada)</td></tr>
+      <tr><td><code>identity</code></td><td>Gestiona identidades y roles de negocio (fachada sobre el IdP para administración).</td><td><code>identity_db</code> (privada); credenciales/sesiones en Keycloak/Cognito</td></tr>
+      <tr><td><code>user-profiles</code></td><td>Gestiona el perfil del usuario (datos asociados al usuario).</td><td><code>user_profiles_db</code> (privada)</td></tr>
+      <tr><td><code>inventory</code></td><td>Gestiona la flota como activos: alta/compra, baja/retirada y ficha del vehículo.</td><td><code>inventory_db</code> (privada)</td></tr>
+      <tr><td><code>availability</code></td><td>Mantiene el estado operativo actual de cada vehículo (disponible, reservado, en uso, retirado, etc.).</td><td><code>availability_db</code> (privada)</td></tr>
+      <tr><td><code>telemetry</code></td><td>Recibe lecturas de telemetría (batería, posición, odómetro, etc.) y detecta señales como batería baja.</td><td><code>telemetry_db</code> (privada)</td></tr>
+      <tr><td><code>reservations</code></td><td>Crea y gestiona reservas, cancelaciones y expiraciones (evita doble reserva).</td><td><code>reservations_db</code> (privada)</td></tr>
+      <tr><td><code>rides</code></td><td>Gestiona el ciclo del viaje (inicio/fin) y registra el viaje completado (<code>TripRecorded</code>).</td><td><code>rides_db</code> (privada)</td></tr>
+      <tr><td><code>incidents</code></td><td>Registra incidencias/averías reportadas.</td><td><code>incidents_db</code> (privada)</td></tr>
+      <tr><td><code>maintenance</code></td><td>Gestiona órdenes y tareas de mantenimiento (retirar/devolver vehículo a servicio, reparar/cargar).</td><td><code>maintenance_db</code> (privada)</td></tr>
+      <tr><td><code>relocation</code></td><td>Gestiona órdenes de recolocación de vehículos entre zonas según demanda.</td><td><code>relocation_db</code> (privada)</td></tr>
+      <tr><td><code>history</code></td><td>Guarda un historial consultable de lo ocurrido (append-only). OLTP de lectura, no analítico.</td><td><code>history_db</code> (privada)</td></tr>
+      <tr><td><code>analytics</code></td><td>Servicio analítico: expone consultas sobre marts (datos agregados/preparados).</td><td><code>analytics_db</code> (privada, analítica)</td></tr>
+      <tr><td>Keycloak / Cognito</td><td>Proveedor de identidad (login, tokens, credenciales, sesiones).</td><td><code>keycloak_db</code> en local (si aplica) o servicio gestionado</td></tr>
+      <tr><td>EventBridge + SQS/DLQ</td><td>Bus de eventos y colas para entrega asíncrona, reintentos y mensajes fallidos.</td><td>— (infraestructura)</td></tr>
+      <tr><td>S3 Data Lake</td><td>Almacenamiento analítico por capas: <code>raw/</code>, <code>trusted/</code>, <code>curated/</code>.</td><td>Buckets/rutas en S3 (LocalStack en local)</td></tr>
+      <tr><td>Prometheus</td><td>Recolecta métricas técnicas/de negocio de los servicios.</td><td>TSDB de Prometheus</td></tr>
+      <tr><td>Grafana</td><td>Visualización de métricas y paneles analíticos/operativos.</td><td>Prometheus y/o <code>analytics</code></td></tr>
+    </tbody>
+  </table>
+
+  <h2 class="page-break">2. Vista general (servicios, datos y mensajería)</h2>
+  <pre class="mermaid">
+flowchart LR
+    subgraph Clients["Clientes"]
+        U[Usuario final]
+        O[Operaciones / Mantenimiento]
+        A[Administración]
+        UA[App Usuario<br/>Swagger/Postman]
+        OA[App Operaciones<br/>Swagger/Postman]
+        GD[Dashboard Grafana]
+        U --> UA
+        O --> OA
+        A --> GD
+    end
+
+    subgraph Edge["Edge / Acceso"]
+        GW[API Gateway / Nginx]
+        KC[Keycloak / Cognito<br/>IdP]
+    end
+
+    UA --> GW
+    OA --> GW
+    UA -. OIDC/JWT .-> KC
+    OA -. OIDC/JWT .-> KC
+    GW -. valida JWT .-> KC
+
+    subgraph OLTP["Microservicios OLTP (1 BD PostgreSQL por servicio)"]
+        ZN[zones<br/>zones_db]
+        IDN[identity<br/>identity_db]
+        UP[user-profiles<br/>user_profiles_db]
+        INV[inventory<br/>inventory_db]
+        AV[availability<br/>availability_db]
+        TE[telemetry<br/>telemetry_db]
+        RS[reservations<br/>reservations_db]
+        RD[rides<br/>rides_db]
+        IN[incidents<br/>incidents_db]
+        MT[maintenance<br/>maintenance_db]
+        RL[relocation<br/>relocation_db]
+        HI[history<br/>history_db]
+    end
+
+    subgraph OLAP["Analítica (OLAP)"]
+        AN[analytics<br/>analytics_db]
+    end
+
+    subgraph Msg["Mensajería"]
+        EB[EventBridge<br/>Bus de eventos]
+        Q[SQS + DLQ]
+    end
+
+    subgraph Lambda["Lambdas"]
+        L1[reservation-expiration]
+        L2[maintenance-detection]
+        L3[analytics-ingest]
+        L4[mart-builder]
+        L5[demand-relocation]
+    end
+
+    subgraph Data["Almacenamiento y observabilidad"]
+        S3[(S3 Data Lake<br/>raw / trusted / curated)]
+        PROM[Prometheus]
+    end
+
+    GW --> IDN
+    GW --> UP
+    GW --> ZN
+    GW --> INV
+    GW --> AV
+    GW --> RS
+    GW --> RD
+    GW --> IN
+    GW --> MT
+    GW --> RL
+    GW --> AN
+
+    IDN --> EB
+    UP --> EB
+    ZN --> EB
+    INV --> EB
+    AV --> EB
+    TE --> EB
+    RS --> EB
+    RD --> EB
+    IN --> EB
+    MT --> EB
+    RL --> EB
+
+    EB --> Q
+    Q --> HI
+    Q --> L1
+    Q --> L2
+    Q --> L3
+    Q --> L4
+    Q --> L5
+
+    L1 --> RS
+    L2 --> MT
+    L3 --> S3
+    L4 --> S3
+    L4 --> AN
+    L5 --> RL
+
+    GD --> AN
+    PROM --> GD
+    ZN -. métricas .-> PROM
+    IDN -. métricas .-> PROM
+    UP -. métricas .-> PROM
+    INV -. métricas .-> PROM
+    AV -. métricas .-> PROM
+    TE -. métricas .-> PROM
+    RS -. métricas .-> PROM
+    RD -. métricas .-> PROM
+    IN -. métricas .-> PROM
+    MT -. métricas .-> PROM
+    RL -. métricas .-> PROM
+    HI -. métricas .-> PROM
+    AN -. métricas .-> PROM
+  </pre>
+
+  <h2 class="page-break">3. Conexiones por servicio</h2>
+  <table>
+    <thead><tr><th>Servicio</th><th>Tipo</th><th>Base de datos</th><th>Entrada principal</th><th>Publica eventos</th><th>Consume eventos / depende de</th><th>Salidas relevantes</th></tr></thead>
+    <tbody>
+      <tr><td>zones</td><td>OLTP</td><td><code>zones_db</code></td><td>API Gateway (/zones)</td><td>ZoneCreated</td><td>—</td><td>Catálogo de zonas</td></tr>
+      <tr><td>identity</td><td>OLTP</td><td><code>identity_db</code></td><td>API Gateway (/auth, /users, /roles), Keycloak</td><td>UserRegistered</td><td>Keycloak</td><td>Identidad y roles</td></tr>
+      <tr><td>user-profiles</td><td>OLTP</td><td><code>user_profiles_db</code></td><td>API Gateway (/profiles)</td><td>UserProfileUpdated</td><td>UserRegistered</td><td>Perfil de usuario</td></tr>
+      <tr><td>inventory</td><td>OLTP</td><td><code>inventory_db</code></td><td>API Gateway (/vehicles, /acquisitions)</td><td>VehiclePurchased, VehicleRetired</td><td>—</td><td>Activos de flota</td></tr>
+      <tr><td>availability</td><td>OLTP</td><td><code>availability_db</code></td><td>API Gateway (/availability)</td><td>VehicleAvailabilityChanged</td><td>VehicleReserved, VehiclePickedUp, VehicleDroppedOff, VehicleBatteryLow, VehicleWithdrawnForMaintenance, VehicleReturnedToService</td><td>Estado operativo</td></tr>
+      <tr><td>telemetry</td><td>OLTP</td><td><code>telemetry_db</code></td><td>Ingesta (/telemetry)</td><td>TelemetryReceived, VehicleBatteryLow</td><td>—</td><td>Lecturas y batería</td></tr>
+      <tr><td>reservations</td><td>OLTP</td><td><code>reservations_db</code></td><td>API Gateway (/reservations)</td><td>VehicleReserved, ReservationCancelled, ReservationExpired</td><td>VehiclePickedUp, VehicleDroppedOff</td><td>Reservas</td></tr>
+      <tr><td>rides</td><td>OLTP</td><td><code>rides_db</code></td><td>API Gateway (/rides)</td><td>VehiclePickedUp, VehicleDroppedOff, TripRecorded</td><td>VehicleReserved</td><td>Viajes</td></tr>
+      <tr><td>incidents</td><td>OLTP</td><td><code>incidents_db</code></td><td>API Gateway (/incidents)</td><td>IncidentReported</td><td>—</td><td>Incidencias</td></tr>
+      <tr><td>maintenance</td><td>OLTP</td><td><code>maintenance_db</code></td><td>API Gateway (/maintenance-orders)</td><td>VehicleWithdrawnForMaintenance, VehicleReturnedToService, MaintenanceOrderOpened, MaintenanceOrderCompleted</td><td>VehicleBatteryLow, IncidentReported</td><td>Órdenes de mantenimiento</td></tr>
+      <tr><td>relocation</td><td>OLTP</td><td><code>relocation_db</code></td><td>API Gateway (/relocation-orders)</td><td>RelocationOrderCreated, RelocationOrderCompleted</td><td>DemandHotspotDetected</td><td>Órdenes de recolocación</td></tr>
+      <tr><td>history</td><td>OLTP (lectura)</td><td><code>history_db</code></td><td>API Gateway (/history)</td><td>—</td><td>Todos los eventos de dominio</td><td>Historial consultable</td></tr>
+      <tr><td>analytics</td><td>OLAP</td><td><code>analytics_db</code></td><td>API Gateway (/analytics), Grafana</td><td>— (lee marts)</td><td>Marts construidos por mart-builder</td><td>Marts y consultas analíticas</td></tr>
+    </tbody>
+  </table>
+
+  <h2>4. Lambdas y flujo asíncrono</h2>
+  <table>
+    <thead><tr><th>Lambda</th><th>Disparador / entrada</th><th>Procesa</th><th>Escribe / notifica a</th></tr></thead>
+    <tbody>
+      <tr><td>reservation-expiration</td><td>Eventos/temporización vía SQS/EventBridge</td><td>Reservas no confirmadas vencidas</td><td>reservations</td></tr>
+      <tr><td>maintenance-detection</td><td>VehicleBatteryLow, IncidentReported vía SQS</td><td>Detección/apertura de mantenimiento</td><td>maintenance (y efectos por eventos)</td></tr>
+      <tr><td>analytics-ingest</td><td>Eventos de dominio vía SQS</td><td>Valida y vuelca a raw</td><td>S3 raw/</td></tr>
+      <tr><td>mart-builder</td><td>Flujo analítico vía SQS</td><td>Construye trusted/curated y marts</td><td>S3 trusted/curated y analytics_db</td></tr>
+      <tr><td>demand-relocation</td><td>Señales/mart_demanda (periódico)</td><td>Detecta hotspots</td><td>relocation</td></tr>
+    </tbody>
+  </table>
+
+  <h2 class="page-break">5. Eventos y consumidores (aclaración)</h2>
+  <ul>
+    <li><strong>No todos los eventos tienen el mismo tipo de consumidor.</strong> Algunos disparan lógica en otros microservicios; otros alimentan historial/analítica o sirven como señal operativa/visual.</li>
+    <li><strong>Consumidores transversales:</strong> <code>history</code> persiste historial de negocio y el pipeline analítico (<code>analytics-ingest</code> → S3 <code>raw/trusted/curated</code> → <code>mart-builder</code> → <code>analytics_db</code>) consume eventos de dominio para ingesta y construcción de marts. Por eso, incluso sin un "servicio de negocio" directo, suele haber consumo asíncrono para trazabilidad y analítica.</li>
+    <li><strong>Consumidores directos por evento (ejemplos):</strong> <code>UserRegistered</code> → <code>user-profiles</code>; <code>VehicleReserved</code> → <code>availability</code>, <code>rides</code>; <code>VehiclePickedUp</code>/<code>VehicleDroppedOff</code> → <code>availability</code>/<code>rides</code>/<code>reservations</code> según flujo; <code>VehicleBatteryLow</code>/<code>IncidentReported</code> → <code>maintenance</code>; <code>DemandHotspotDetected</code> → <code>relocation</code> (además de historial/analítica).</li>
+    <li><strong>Eventos sin consumidor "microservicio" directo:</strong> p. ej. <code>MartBuildCompleted</code> (CURATED) señala actualización de marts; sus consumidores naturales son visualización/operación (Grafana/procesos operativos), lo cual es coherente con su propósito.</li>
+    <li><strong>Nota sobre la tabla de servicios:</strong> la columna "Consume eventos / depende de" muestra dependencias/consumos directos relevantes; no repite siempre <code>history</code> y <code>analytics-ingest</code> para no sobrecargarla.</li>
+  </ul>
+
+  <h2>6. Capas de datos (Data Lake)</h2>
+  <pre class="mermaid">
+flowchart LR
+    E[Eventos de dominio] --> R[raw/<br/>JSON-JSONL<br/>append-only]
+    R --> T[trusted/<br/>Parquet<br/>validado, deduplicado]
+    T --> C[curated/<br/>Parquet<br/>agregados y marts]
+    C --> M[analytics_db<br/>mart_*]
+    M --> G[Grafana / API analytics]
+  </pre>
+
+  <h2>7. Notas de despliegue</h2>
+  <ul>
+    <li><strong>Local (por defecto):</strong> Docker Compose con PostgreSQL (bases operacionales + analítica), LocalStack, Keycloak, Prometheus, Grafana, servicios Spring Boot y Lambdas contra LocalStack.</li>
+    <li><strong>AWS:</strong> equivalentes gestionados (S3, EventBridge, SQS, Lambda, RDS, CloudWatch/Cognito según fase), manteniendo la misma separación lógica.</li>
+  </ul>
+</body>
+</html>
