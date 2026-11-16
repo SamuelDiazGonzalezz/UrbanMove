@@ -17,12 +17,13 @@ CREATE TABLE IF NOT EXISTS reservations (
     status VARCHAR(30) NOT NULL
 );
 
--- Seed de flota inicial para pruebas del MVP (Valencia centro)
+-- Seed de flota inicial para pruebas del MVP (Sítycleta - Las Palmas de Gran Canaria)
+-- Ejemplos inspirados en ubicaciones conocidas del servicio (coordenadas aproximadas)
 INSERT INTO vehicles (id, code, type, status, battery_percentage, latitude, longitude)
 VALUES
-    ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'SCOOT-001', 'SCOOTER', 'AVAILABLE', 92, 39.4699, -0.3763),
-    ('b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 'SCOOT-002', 'SCOOTER', 'AVAILABLE', 75, 39.4715, -0.3750),
-    ('c2eebc99-9c0b-4ef8-bb6d-6bb9bd380a13', 'BIKE-101', 'ELECTRIC_BICYCLE', 'AVAILABLE', 88, 39.4680, -0.3780),
-    ('d3eebc99-9c0b-4ef8-bb6d-6bb9bd380a14', 'BIKE-102', 'BICYCLE', 'AVAILABLE', 100, 39.4730, -0.3795),
-    ('e4eebc99-9c0b-4ef8-bb6d-6bb9bd380a15', 'SCOOT-003', 'SCOOTER', 'MAINTENANCE', 10, 39.4670, -0.3740)
+    ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'SYT-001', 'ELECTRIC_BICYCLE', 'AVAILABLE', 92, 28.10890, -15.41720), -- Parque de San Telmo
+    ('b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a12', 'SYT-002', 'BICYCLE', 'AVAILABLE', 100, 28.14080, -15.43000),          -- Parque de Santa Catalina
+    ('c2eebc99-9c0b-4ef8-bb6d-6bb9bd380a13', 'SYT-003', 'ELECTRIC_BICYCLE', 'AVAILABLE', 88, 28.10650, -15.41850), -- Plaza de la Feria
+    ('d3eebc99-9c0b-4ef8-bb6d-6bb9bd380a14', 'SYT-004', 'BICYCLE', 'AVAILABLE', 100, 28.11891, -15.42492),          -- Plaza O'Shanahan / Base Naval (zona)
+    ('e4eebc99-9c0b-4ef8-bb6d-6bb9bd380a15', 'SYT-005', 'ELECTRIC_BICYCLE', 'MAINTENANCE', 18, 28.10470, -15.43610) -- Schamann (Ciudad Alta)
 ON CONFLICT (id) DO NOTHING;
