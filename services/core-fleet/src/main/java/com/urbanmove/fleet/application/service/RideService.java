@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -91,7 +92,8 @@ public class RideService implements ManageRidesUseCase {
         reservationRepository.save(completedReservation);
 
         // 6. Iniciar viaje
-        Ride ride = Ride.start(reservation.id(), vehicle.id(), reservation.userId(), vehicle.latitude(), vehicle.longitude(), now);
+        Ride ride = Ride.start(reservation.id(), vehicle.id(), reservation.userId(),
+                vehicle.latitude(), vehicle.longitude(), now);
         try {
             return rideRepository.save(ride);
         } catch (DataIntegrityViolationException ex) {
@@ -115,12 +117,14 @@ public class RideService implements ManageRidesUseCase {
         Vehicle vehicle = vehicleRepository.findByIdForUpdate(ride.vehicleId())
                 .orElseThrow(() -> new ResourceNotFoundException("Vehicle not found: " + ride.vehicleId()));
 
-        // Completar viaje calculando distancia y costo
+        // Completar viaje calculando distancia y coste
         Ride completedRide = ride.complete(endLatitude, endLongitude, now);
         Ride savedRide = rideRepository.save(completedRide);
 
-        // Actualizar estado del vehículo: si batería < 20% -> LOW_BATTERY/MAINTENANCE, sino AVAILABLE
-        VehicleStatus newStatus = vehicle.batteryPercentage() < 20 ? VehicleStatus.MAINTENANCE : VehicleStatus.AVAILABLE;
+        // Actualizar estado del vehículo: si batería < 20% -> MAINTENANCE, sino AVAILABLE
+        VehicleStatus newStatus = vehicle.batteryPercentage() < 20
+                ? VehicleStatus.MAINTENANCE
+                : VehicleStatus.AVAILABLE;
         Vehicle updatedVehicle = new Vehicle(
                 vehicle.id(), vehicle.code(), vehicle.type(),
                 newStatus, vehicle.batteryPercentage(),
@@ -128,19 +132,30 @@ public class RideService implements ManageRidesUseCase {
         );
         vehicleRepository.save(updatedVehicle);
 
-        // Emitir evento de viaje finalizado
+        // Emitir evento con todos los campos del sobre
         TripRecordedEvent event = TripRecordedEvent.of(
                 savedRide.id(),
                 savedRide.reservationId(),
                 savedRide.vehicleId(),
                 vehicle.code(),
                 savedRide.userId(),
+                savedRide.startedAt(),
+                savedRide.finishedAt(),
                 savedRide.distanceKm(),
-                savedRide.costAmount()
+                savedRide.costAmount(),
+                savedRide.endLatitude(),
+                savedRide.endLongitude()
         );
         eventPublisher.publish(event);
 
-        log.info("Finished ride [{}] for vehicle [{}], cost: {} EUR", savedRide.id(), vehicle.code(), savedRide.costAmount());
+        log.info("Finished ride [{}] for vehicle [{}], cost: {} EUR",
+                savedRide.id(), vehicle.code(), savedRide.costAmount());
         return savedRide;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Ride> getAllRides() {
+        return rideRepository.findAll();
     }
 }

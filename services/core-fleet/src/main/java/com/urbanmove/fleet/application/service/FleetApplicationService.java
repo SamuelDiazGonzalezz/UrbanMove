@@ -59,4 +59,9 @@ public class FleetApplicationService implements GetVehiclesUseCase, ReserveVehic
     public Ride finishRide(UUID rideId, double endLatitude, double endLongitude) {
         return rideService.finishRide(rideId, endLatitude, endLongitude);
     }
+
+    @Override
+    public List<Ride> getAllRides() {
+        return rideService.getAllRides();
+    }
 }
