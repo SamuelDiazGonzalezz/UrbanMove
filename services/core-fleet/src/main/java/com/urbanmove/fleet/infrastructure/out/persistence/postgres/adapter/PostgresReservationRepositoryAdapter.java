@@ -6,6 +6,8 @@ import com.urbanmove.fleet.infrastructure.out.persistence.postgres.entity.Reserv
 import com.urbanmove.fleet.infrastructure.out.persistence.postgres.repository.SpringDataReservationRepository;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -27,5 +29,24 @@ public class PostgresReservationRepositoryAdapter implements ReservationReposito
     @Override
     public Optional<Reservation> findById(UUID id) {
         return repository.findById(id).map(ReservationJpaEntity::toDomain);
+    }
+
+    @Override
+    public Optional<Reservation> findByIdForUpdate(UUID id) {
+        return repository.findByIdForUpdate(id).map(ReservationJpaEntity::toDomain);
+    }
+
+    @Override
+    public List<Reservation> findExpiredActive(Instant now) {
+        return repository.findByStatusAndExpiresAtBefore(Reservation.ReservationStatus.ACTIVE, now)
+                .stream()
+                .map(ReservationJpaEntity::toDomain)
+                .toList();
+    }
+
+    @Override
+    public Optional<Reservation> findActiveByVehicleId(UUID vehicleId) {
+        return repository.findByVehicleIdAndStatus(vehicleId, Reservation.ReservationStatus.ACTIVE)
+                .map(ReservationJpaEntity::toDomain);
     }
 }

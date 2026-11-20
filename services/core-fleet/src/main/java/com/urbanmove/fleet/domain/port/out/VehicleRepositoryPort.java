@@ -9,5 +9,6 @@ public interface VehicleRepositoryPort {
     List<Vehicle> findAll();
     List<Vehicle> findAvailable();
     Optional<Vehicle> findById(UUID id);
+    Optional<Vehicle> findByIdForUpdate(UUID id);
     Vehicle save(Vehicle vehicle);
 }

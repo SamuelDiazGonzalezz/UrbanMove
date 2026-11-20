@@ -8,6 +8,8 @@ import java.util.UUID;
 public interface RideRepositoryPort {
     Ride save(Ride ride);
     Optional<Ride> findById(UUID id);
+    Optional<Ride> findByIdForUpdate(UUID id);
     Optional<Ride> findActiveByReservationId(UUID reservationId);
+    Optional<Ride> findActiveByVehicleId(UUID vehicleId);
     List<Ride> findAll();
 }

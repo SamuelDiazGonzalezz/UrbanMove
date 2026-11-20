@@ -39,6 +39,11 @@ public class PostgresVehicleRepositoryAdapter implements VehicleRepositoryPort {
     }
 
     @Override
+    public Optional<Vehicle> findByIdForUpdate(UUID id) {
+        return repository.findByIdForUpdate(id).map(VehicleJpaEntity::toDomain);
+    }
+
+    @Override
     public Vehicle save(Vehicle vehicle) {
         VehicleJpaEntity saved = repository.save(VehicleJpaEntity.fromDomain(vehicle));
         return saved.toDomain();

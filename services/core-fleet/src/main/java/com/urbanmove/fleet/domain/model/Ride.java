@@ -26,20 +26,20 @@ public record Ride(
 
     public Ride {
         Objects.requireNonNull(id, "Ride id cannot be null");
-        Objects.requireNonNull(reservationId, "Reservation id cannot be null");
+        // reservationId is nullable to support direct walk-in rides on AVAILABLE vehicles
         Objects.requireNonNull(vehicleId, "Vehicle id cannot be null");
         Objects.requireNonNull(userId, "User id cannot be null");
         Objects.requireNonNull(startedAt, "Started at cannot be null");
         Objects.requireNonNull(status, "Ride status cannot be null");
     }
 
-    public static Ride start(UUID reservationId, UUID vehicleId, String userId, double lat, double lon) {
+    public static Ride start(UUID reservationId, UUID vehicleId, String userId, double lat, double lon, Instant now) {
         return new Ride(
                 UUID.randomUUID(),
                 reservationId,
                 vehicleId,
                 userId,
-                Instant.now(),
+                now,
                 null,
                 lat,
                 lon,
@@ -51,14 +51,17 @@ public record Ride(
         );
     }
 
-    public Ride complete(double endLat, double endLon) {
+    public static Ride start(UUID reservationId, UUID vehicleId, String userId, double lat, double lon) {
+        return start(reservationId, vehicleId, userId, lat, lon, Instant.now());
+    }
+
+    public Ride complete(double endLat, double endLon, Instant now) {
         if (this.status != RideStatus.IN_PROGRESS) {
-            throw new IllegalStateException("Ride is not in progress");
+            throw new IllegalStateException("Ride is not in progress: " + id);
         }
-        Instant end = Instant.now();
         // Distancia aproximada y coste: 1.0€ base + 0.25€ por minuto simulado
         double dist = Math.max(0.5, Math.hypot(endLat - startLatitude, endLon - startLongitude) * 111.0);
-        long seconds = Math.max(60, end.getEpochSecond() - startedAt.getEpochSecond());
+        long seconds = Math.max(60, now.getEpochSecond() - startedAt.getEpochSecond());
         double cost = Math.round((1.0 + (seconds / 60.0) * 0.25) * 100.0) / 100.0;
 
         return new Ride(
@@ -67,7 +70,7 @@ public record Ride(
                 vehicleId,
                 userId,
                 startedAt,
-                end,
+                now,
                 startLatitude,
                 startLongitude,
                 endLat,
@@ -76,5 +79,9 @@ public record Ride(
                 cost,
                 RideStatus.COMPLETED
         );
+    }
+
+    public Ride complete(double endLat, double endLon) {
+        return complete(endLat, endLon, Instant.now());
     }
 }

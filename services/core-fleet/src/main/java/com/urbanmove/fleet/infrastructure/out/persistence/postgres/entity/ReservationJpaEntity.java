@@ -21,31 +21,36 @@ public class ReservationJpaEntity {
     @Column(name = "reserved_at", nullable = false)
     private Instant reservedAt;
 
+    @Column(name = "expires_at", nullable = false)
+    private Instant expiresAt;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
     private Reservation.ReservationStatus status;
 
     public ReservationJpaEntity() {}
 
-    public ReservationJpaEntity(UUID id, UUID vehicleId, String userId, Instant reservedAt, Reservation.ReservationStatus status) {
+    public ReservationJpaEntity(UUID id, UUID vehicleId, String userId, Instant reservedAt, Instant expiresAt, Reservation.ReservationStatus status) {
         this.id = id;
         this.vehicleId = vehicleId;
         this.userId = userId;
         this.reservedAt = reservedAt;
+        this.expiresAt = expiresAt;
         this.status = status;
     }
 
     public static ReservationJpaEntity fromDomain(Reservation r) {
-        return new ReservationJpaEntity(r.id(), r.vehicleId(), r.userId(), r.reservedAt(), r.status());
+        return new ReservationJpaEntity(r.id(), r.vehicleId(), r.userId(), r.reservedAt(), r.expiresAt(), r.status());
     }
 
     public Reservation toDomain() {
-        return new Reservation(id, vehicleId, userId, reservedAt, status);
+        return new Reservation(id, vehicleId, userId, reservedAt, expiresAt, status);
     }
 
     public UUID getId() { return id; }
     public UUID getVehicleId() { return vehicleId; }
     public String getUserId() { return userId; }
     public Instant getReservedAt() { return reservedAt; }
+    public Instant getExpiresAt() { return expiresAt; }
     public Reservation.ReservationStatus getStatus() { return status; }
 }

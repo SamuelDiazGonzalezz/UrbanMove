@@ -1,6 +1,7 @@
 package com.urbanmove.fleet.infrastructure.in.web;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.urbanmove.fleet.domain.exception.ConcurrencyConflictException;
 import com.urbanmove.fleet.domain.model.Reservation;
 import com.urbanmove.fleet.domain.model.Vehicle;
 import com.urbanmove.fleet.domain.model.VehicleStatus;
@@ -63,8 +64,8 @@ class FleetControllerTest {
     @DisplayName("POST /api/v1/reservations reserva vehículo con éxito")
     void shouldReserveVehicle() throws Exception {
         UUID vehicleId = UUID.randomUUID();
-        UUID reservationId = UUID.randomUUID();
-        Reservation reservation = new Reservation(reservationId, vehicleId, "user-test", Instant.now(), Reservation.ReservationStatus.ACTIVE);
+        Instant now = Instant.now();
+        Reservation reservation = Reservation.createNew(vehicleId, "user-test", now, 15);
 
         when(reserveVehicleUseCase.reserve(eq(vehicleId), eq("user-test"))).thenReturn(reservation);
 
@@ -74,7 +75,26 @@ class FleetControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").value(reservationId.toString()))
-                .andExpect(jsonPath("$.status").value("ACTIVE"));
+                .andExpect(jsonPath("$.id").value(reservation.id().toString()))
+                .andExpect(jsonPath("$.status").value("ACTIVE"))
+                .andExpect(jsonPath("$.expiresAt").exists());
+    }
+
+    @Test
+    @DisplayName("POST /api/v1/reservations devuelve 409 Conflict con ProblemDetail cuando hay conflicto de reserva")
+    void shouldReturn409ProblemDetailWhenConflict() throws Exception {
+        UUID vehicleId = UUID.randomUUID();
+        when(reserveVehicleUseCase.reserve(eq(vehicleId), eq("user-test")))
+                .thenThrow(new ConcurrencyConflictException("Vehicle is already reserved"));
+
+        FleetController.ReserveRequest request = new FleetController.ReserveRequest(vehicleId, "user-test");
+
+        mockMvc.perform(post("/api/v1/reservations")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.title").value("Resource State Conflict"))
+                .andExpect(jsonPath("$.status").value(409))
+                .andExpect(jsonPath("$.code").value("CONCURRENCY_CONFLICT"));
     }
 }

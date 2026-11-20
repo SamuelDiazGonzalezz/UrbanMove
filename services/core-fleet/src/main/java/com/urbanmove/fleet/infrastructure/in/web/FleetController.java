@@ -11,7 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -42,41 +41,25 @@ public class FleetController {
     public record ReserveRequest(UUID vehicleId, String userId) {}
 
     @PostMapping("/reservations")
-    public ResponseEntity<?> reserveVehicle(@RequestBody ReserveRequest request) {
-        try {
-            Reservation reservation = reserveVehicleUseCase.reserve(request.vehicleId(), request.userId());
-            return ResponseEntity.status(HttpStatus.CREATED).body(reservation);
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", e.getMessage()));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
-        }
+    public ResponseEntity<Reservation> reserveVehicle(@RequestBody ReserveRequest request) {
+        Reservation reservation = reserveVehicleUseCase.reserve(request.vehicleId(), request.userId());
+        return ResponseEntity.status(HttpStatus.CREATED).body(reservation);
     }
 
     public record StartRideRequest(UUID reservationId) {}
 
     @PostMapping("/rides/start")
-    public ResponseEntity<?> startRide(@RequestBody StartRideRequest request) {
-        try {
-            Ride ride = manageRidesUseCase.startRide(request.reservationId());
-            return ResponseEntity.status(HttpStatus.CREATED).body(ride);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
-        }
+    public ResponseEntity<Ride> startRide(@RequestBody StartRideRequest request) {
+        Ride ride = manageRidesUseCase.startRide(request.reservationId());
+        return ResponseEntity.status(HttpStatus.CREATED).body(ride);
     }
 
     public record FinishRideRequest(double endLatitude, double endLongitude) {}
 
     @PostMapping("/rides/{rideId}/finish")
-    public ResponseEntity<?> finishRide(@PathVariable UUID rideId, @RequestBody FinishRideRequest request) {
-        try {
-            Ride ride = manageRidesUseCase.finishRide(rideId, request.endLatitude(), request.endLongitude());
-            return ResponseEntity.ok(ride);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", e.getMessage()));
-        }
+    public ResponseEntity<Ride> finishRide(@PathVariable UUID rideId, @RequestBody FinishRideRequest request) {
+        Ride ride = manageRidesUseCase.finishRide(rideId, request.endLatitude(), request.endLongitude());
+        return ResponseEntity.ok(ride);
     }
 
     @GetMapping("/rides")

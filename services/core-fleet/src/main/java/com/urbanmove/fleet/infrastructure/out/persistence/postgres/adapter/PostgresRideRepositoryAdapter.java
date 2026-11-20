@@ -30,8 +30,19 @@ public class PostgresRideRepositoryAdapter implements RideRepositoryPort {
     }
 
     @Override
+    public Optional<Ride> findByIdForUpdate(UUID id) {
+        return repository.findByIdForUpdate(id).map(RideJpaEntity::toDomain);
+    }
+
+    @Override
     public Optional<Ride> findActiveByReservationId(UUID reservationId) {
         return repository.findByReservationIdAndStatus(reservationId, Ride.RideStatus.IN_PROGRESS)
+                .map(RideJpaEntity::toDomain);
+    }
+
+    @Override
+    public Optional<Ride> findActiveByVehicleId(UUID vehicleId) {
+        return repository.findByVehicleIdAndStatus(vehicleId, Ride.RideStatus.IN_PROGRESS)
                 .map(RideJpaEntity::toDomain);
     }
 

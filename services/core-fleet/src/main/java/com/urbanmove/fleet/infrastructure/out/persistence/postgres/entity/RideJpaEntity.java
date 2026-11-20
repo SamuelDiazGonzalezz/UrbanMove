@@ -12,7 +12,7 @@ public class RideJpaEntity {
     @Id
     private UUID id;
 
-    @Column(name = "reservation_id", nullable = false)
+    @Column(name = "reservation_id")
     private UUID reservationId;
 
     @Column(name = "vehicle_id", nullable = false)
