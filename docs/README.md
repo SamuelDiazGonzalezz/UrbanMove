@@ -13,6 +13,7 @@ docs/
 ├── README.md                     este índice
 ├── 00-gestion/
 │   ├── ACTION-PLAN.md            qué se hace cada semana, en orden
+│   ├── ESTADO-Y-PENDIENTES-2026-11-21.md  situación del MVP y deuda técnica
 │   ├── GITHUB-WORKFLOW.md        uso mínimo de issues y etiquetas
 │   ├── KICKOFF.md                reunión de arranque: decisiones, reparto y acta
 │   ├── KICKOFF.pdf               copia para imprimir
@@ -30,7 +31,7 @@ docs/
 │   └── adr/                      decisiones arquitectónicas (0001-0007)
 ├── 02-desarrollo/
 │   ├── LOCAL-DEV.md              herramientas, versiones y arranque local
-?   ??? MANUAL-PRUEBAS-MVP.md     manual de usuario y pruebas del MVP local
+│   ├── MANUAL-PRUEBAS-MVP.md     manual de usuario y pruebas del MVP local
 │   ├── CODE-STANDARDS.md         nomenclatura, legibilidad, SOLID e inmutabilidad
 │   ├── TESTING.md                pirámide, Testcontainers y contratos
 │   └── CONTAINERS.md             Dockerfile, JVM, probes y Compose
@@ -51,6 +52,7 @@ cualquier explorador de archivos. Los nombres de documento se mantienen en mayú
 | Documento | Para qué sirve | Cuándo se lee |
 |---|---|---|
 | [ACTION-PLAN.md](00-gestion/ACTION-PLAN.md) | Qué se hace cada semana, en qué orden y qué entregable lo cierra | Al empezar la semana |
+| [ESTADO-Y-PENDIENTES-2026-11-21.md](00-gestion/ESTADO-Y-PENDIENTES-2026-11-21.md) | Qué está verificado, qué deuda queda y por dónde seguir | Al retomar el proyecto |
 | [GITHUB-WORKFLOW.md](00-gestion/GITHUB-WORKFLOW.md) | Cuándo abrir una issue, etiquetas mínimas y comandos `gh` | Antes de crear la primera tarea |
 | [KICKOFF.md](00-gestion/KICKOFF.md) | Cerrar decisiones, reparto y plan de la semana 1 | Antes y durante la primera reunión |
 | [PLAN.md](00-gestion/PLAN.md) | Alcance, fases, reparto, riesgos y demo | Al empezar y al planificar cada fase |
@@ -226,6 +228,7 @@ que regenere el PDF.
 - [README del repositorio](../README.md)
 - [Flujo de trabajo en GitHub](00-gestion/GITHUB-WORKFLOW.md)
 - [Plan de acción](00-gestion/ACTION-PLAN.md)
+- [Estado y pendientes (2026-11-21)](00-gestion/ESTADO-Y-PENDIENTES-2026-11-21.md)
 - [Reunión de arranque](00-gestion/KICKOFF.md)
 - [Plan maestro](00-gestion/PLAN.md)
 - [Roadmap de servicios](01-arquitectura/SERVICE-ROADMAP.md)
