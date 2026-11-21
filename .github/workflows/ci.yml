@@ -23,4 +23,6 @@ jobs:
           cache: 'maven'
 
       - name: Run Maven Tests
+        env:
+          DOCKER_API_VERSION: '1.44'
         run: mvn -B -ntp clean test
