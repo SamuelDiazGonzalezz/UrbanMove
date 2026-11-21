@@ -121,8 +121,8 @@ public class RideService implements ManageRidesUseCase {
         Ride completedRide = ride.complete(endLatitude, endLongitude, now);
         Ride savedRide = rideRepository.save(completedRide);
 
-        // Actualizar estado del vehículo: si batería < 20% -> MAINTENANCE, sino AVAILABLE
-        VehicleStatus newStatus = vehicle.batteryPercentage() < 20
+        // Actualizar estado del vehículo: si batería < 15% -> MAINTENANCE (o LOW_BATTERY), sino AVAILABLE
+        VehicleStatus newStatus = vehicle.batteryPercentage() < 15
                 ? VehicleStatus.MAINTENANCE
                 : VehicleStatus.AVAILABLE;
         Vehicle updatedVehicle = new Vehicle(

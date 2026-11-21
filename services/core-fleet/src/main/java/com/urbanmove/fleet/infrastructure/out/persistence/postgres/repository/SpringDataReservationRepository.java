@@ -19,8 +19,8 @@ public interface SpringDataReservationRepository extends JpaRepository<Reservati
     @Query("SELECT r FROM ReservationJpaEntity r WHERE r.id = :id")
     Optional<ReservationJpaEntity> findByIdForUpdate(@Param("id") UUID id);
 
-    @Query("SELECT r FROM ReservationJpaEntity r WHERE r.status = :status AND r.expiresAt < :now")
-    List<ReservationJpaEntity> findByStatusAndExpiresAtBefore(@Param("status") Reservation.ReservationStatus status, @Param("now") Instant now);
+    @Query(value = "SELECT * FROM reservations WHERE status = :status AND expires_at < :now FOR UPDATE SKIP LOCKED", nativeQuery = true)
+    List<ReservationJpaEntity> findByStatusAndExpiresAtBeforeWithSkipLocked(@Param("status") String status, @Param("now") Instant now);
 
     Optional<ReservationJpaEntity> findByVehicleIdAndStatus(UUID vehicleId, Reservation.ReservationStatus status);
 }

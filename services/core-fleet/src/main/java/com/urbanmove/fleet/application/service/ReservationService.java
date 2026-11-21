@@ -120,6 +120,16 @@ public class ReservationService implements ReserveVehicleUseCase, CancelReservat
             }
         });
 
+        // Emitir evento ReservationCancelledEvent
+        com.urbanmove.fleet.domain.event.ReservationCancelledEvent event =
+                com.urbanmove.fleet.domain.event.ReservationCancelledEvent.of(
+                        cancelledReservation.id(),
+                        cancelledReservation.vehicleId(),
+                        cancelledReservation.userId(),
+                        Instant.now(clock)
+                );
+        eventPublisher.publish(event);
+
         return cancelledReservation;
     }
 }

@@ -38,7 +38,7 @@ public class PostgresReservationRepositoryAdapter implements ReservationReposito
 
     @Override
     public List<Reservation> findExpiredActive(Instant now) {
-        return repository.findByStatusAndExpiresAtBefore(Reservation.ReservationStatus.ACTIVE, now)
+        return repository.findByStatusAndExpiresAtBeforeWithSkipLocked(Reservation.ReservationStatus.ACTIVE.name(), now)
                 .stream()
                 .map(ReservationJpaEntity::toDomain)
                 .toList();

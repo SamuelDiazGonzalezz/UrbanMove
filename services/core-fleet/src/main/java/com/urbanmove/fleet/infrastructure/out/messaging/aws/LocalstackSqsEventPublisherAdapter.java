@@ -1,7 +1,9 @@
 package com.urbanmove.fleet.infrastructure.out.messaging.aws;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.urbanmove.fleet.domain.event.ReservationCancelledEvent;
 import com.urbanmove.fleet.domain.event.ReservationCreatedEvent;
+import com.urbanmove.fleet.domain.event.ReservationExpiredEvent;
 import com.urbanmove.fleet.domain.event.TripRecordedEvent;
 import com.urbanmove.fleet.domain.port.out.EventPublisherPort;
 import org.slf4j.Logger;
@@ -33,6 +35,16 @@ public class LocalstackSqsEventPublisherAdapter implements EventPublisherPort {
     @Override
     public void publish(ReservationCreatedEvent event) {
         sendToQueue(event, "ReservationCreatedEvent");
+    }
+
+    @Override
+    public void publish(ReservationCancelledEvent event) {
+        sendToQueue(event, "ReservationCancelledEvent");
+    }
+
+    @Override
+    public void publish(ReservationExpiredEvent event) {
+        sendToQueue(event, "ReservationExpiredEvent");
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.urbanmove.fleet.application.service;
 
+import com.urbanmove.fleet.domain.event.ReservationExpiredEvent;
 import com.urbanmove.fleet.domain.model.Reservation;
 import com.urbanmove.fleet.domain.model.Vehicle;
 import com.urbanmove.fleet.domain.model.VehicleStatus;
@@ -40,14 +41,16 @@ class ReservationExpirationSchedulerTest {
     private final Clock clock = Clock.fixed(Instant.parse("2026-11-20T22:30:00Z"), ZoneId.of("UTC"));
 
     private ReservationExpirationScheduler scheduler;
+    private SingleReservationExpirationHandler handler;
 
     @BeforeEach
     void setUp() {
-        scheduler = new ReservationExpirationScheduler(reservationRepository, vehicleRepository, eventPublisher, clock);
+        handler = new SingleReservationExpirationHandler(reservationRepository, vehicleRepository, eventPublisher);
+        scheduler = new ReservationExpirationScheduler(reservationRepository, handler, clock);
     }
 
     @Test
-    @DisplayName("Debe marcar como EXPIRED las reservas caducadas y liberar los vehículos a AVAILABLE")
+    @DisplayName("Debe marcar como EXPIRED las reservas caducadas, liberar los vehículos y emitir evento")
     void shouldSweepExpiredReservationsAndReleaseVehicles() {
         UUID vehicleId = UUID.randomUUID();
         UUID reservationId = UUID.randomUUID();
@@ -77,5 +80,10 @@ class ReservationExpirationSchedulerTest {
         ArgumentCaptor<Vehicle> vehCaptor = ArgumentCaptor.forClass(Vehicle.class);
         verify(vehicleRepository).save(vehCaptor.capture());
         assertThat(vehCaptor.getValue().status()).isEqualTo(VehicleStatus.AVAILABLE);
+
+        // Verifica que se emite el evento ReservationExpiredEvent
+        ArgumentCaptor<ReservationExpiredEvent> eventCaptor = ArgumentCaptor.forClass(ReservationExpiredEvent.class);
+        verify(eventPublisher).publish(eventCaptor.capture());
+        assertThat(eventCaptor.getValue().reservationId()).isEqualTo(reservationId);
     }
 }
