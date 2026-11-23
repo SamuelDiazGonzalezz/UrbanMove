@@ -98,6 +98,24 @@ Se crearon suites de pruebas unitarias con **JUnit 5**, **AssertJ** y **Mockito*
 
 ---
 
+### 2.5. Preparación de Infraestructura (Terraform) y CI para Migración a AWS Real
+Para evitar retrabajos cuando toque desplegar en la nube de Amazon Web Services, se adaptó y blindó el ecosistema de infraestructura como código (IaC) y el pipeline de GitHub Actions:
+- **Terraform Dual (LocalStack / AWS)**:
+  - Condicionamiento del bloque `endpoints` y validaciones en `main.tf` mediante `var.is_localstack`. En AWS real utiliza credenciales estándar IAM / OIDC sin mocks.
+  - Etiquetado corporativo global mediante `default_tags` en el provider AWS (`Environment`, `Project`, `ManagedBy`).
+  - Seguridad en S3 (`s3.tf`): añadido versionado, cifrado AES-256 en reposo y `aws_s3_bucket_public_access_block`.
+  - Roles IAM para Lambdas (`lambda.tf`): agregada política de permisos mínimos (`AWSLambdaBasicExecutionRole`, SQS, S3, EventBridge) para ejecución sin bloqueos `403` en AWS.
+  - Creación de perfiles desacoplados en `infra/terraform/environments/` (`local.tfvars` y `staging.tfvars`).
+- **Pipeline de CI Paralelo (`.github/workflows/ci.yml`)**:
+  - Incorporado el job `terraform` que compila las Lambdas en Python 3.11, corre `terraform fmt -check`, `terraform init`, `terraform validate` y `terraform plan` contra el perfil de desarrollo.
+- **Guía de Migración Cloud**:
+  - Publicada la guía completa paso a paso en [`docs/03-operaciones/AWS-MIGRATION-GUIDE.md`](../03-operaciones/AWS-MIGRATION-GUIDE.md).
+- **Commit y Push:**
+  - Commit `bee06ba`: `feat(infra): prepare Terraform and CI for seamless AWS migration and add validation pipeline`
+  - Push exitoso a `origin/prototipo1`.
+
+---
+
 ## 3. Próximos Pasos Técnicos (Roadmap)
 
 Siguiendo las recomendaciones del informe de preparación y los estándares de arquitectura (`AGENTS.md`):
