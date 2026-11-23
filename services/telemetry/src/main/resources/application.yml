@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: telemetry
+  config:
+    import: classpath:urbanmove-common.yml
+
+DB_NAME: telemetry_db
+
+urbanmove:
+  events:
+    queue-name: ""
+  security:
+    public-get-paths: ""
+    public-paths: ""

@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>UrbanMove · Dashboard</title>
+  <link rel="stylesheet" href="/shared/base.css?v=2">
+  <style>
+    .kpis { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); border: 1px solid var(--ink); background: var(--paper); color: var(--ink); margin-bottom: 16px; }
+    .kpis > div { padding: 18px 20px; border-right: 1px solid var(--rule); min-width: 0; }
+    .kpis > div:last-child { border-right: 0; }
+    .kpis .label { margin-bottom: 10px; color: var(--mute); font-weight: 500; }
+    .kpis .big { font-size: 38px; }
+    .kpis .sub { font-size: 11px; color: var(--mute); margin-top: 8px; font-family: var(--mono); }
+    .kpis .alert { background: var(--ink); color: var(--paper); }
+    .kpis .alert .label, .kpis .alert .sub { color: rgba(255, 255, 255, 0.7); }
+    .grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 16px; }
+    .grid .panel + .panel { margin-top: 0; }
+    .c4 { grid-column: span 4; } .c5 { grid-column: span 5; } .c6 { grid-column: span 6; } .c7 { grid-column: span 7; } .c8 { grid-column: span 8; } .c12 { grid-column: span 12; }
+    .hbar { display: grid; grid-template-columns: 120px 1fr 44px; align-items: center; gap: 12px; padding: 6px 0; font-size: 12px; }
+    .hbar .track { height: 10px; border: 1px solid var(--ink); position: relative; }
+    .hbar .fill { position: absolute; inset: 0 auto 0 0; background: var(--ink); }
+    .hbar .n { text-align: right; font-family: var(--mono); }
+    .stack-bar { display: flex; height: 14px; border: 1px solid var(--ink); }
+    .stack-bar span { display: block; height: 100%; border-right: 1px solid var(--ink); }
+    .stack-bar span:last-child { border-right: 0; }
+    .seg-AVAILABLE { background: var(--ink); }
+    .seg-RESERVED { background: var(--paper); }
+    .seg-IN_USE { background: repeating-linear-gradient(90deg, var(--ink) 0 2px, var(--paper) 2px 4px); }
+    .seg-LOW_BATTERY { background: repeating-linear-gradient(0deg, var(--ink) 0 1px, var(--paper) 1px 4px); }
+    .seg-MAINT { background: repeating-linear-gradient(45deg, var(--ink) 0 1.5px, var(--paper) 1.5px 4px); }
+    .zone-row { display: grid; grid-template-columns: 130px 1fr 36px; gap: 12px; align-items: center; padding: 7px 0; font-size: 12px; }
+    .legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 11px; color: var(--mute); margin-top: 12px; }
+    .legend i { display: inline-block; width: 12px; height: 10px; border: 1px solid var(--ink); vertical-align: -1px; margin-right: 6px; }
+    .cols-chart { display: flex; align-items: flex-end; gap: 3px; height: 150px; border-bottom: 1px solid var(--ink); }
+    .cols-chart div { flex: 1; background: var(--ink); min-height: 1px; position: relative; }
+    .cols-chart div.zero { background: var(--rule); }
+    .axis { display: flex; gap: 3px; font: 10px var(--mono); color: var(--mute); margin-top: 6px; }
+    .axis span { flex: 1; text-align: center; }
+    .figures { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 0; border-top: 1px solid var(--rule); }
+    .figures > div { padding: 14px 0 0; }
+    .figures .big { font-size: 26px; }
+    .figures .label { color: var(--mute); font-weight: 500; margin: 6px 0 0; }
+    .services { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); border-top: 1px solid var(--ink); border-left: 1px solid var(--ink); }
+    .services > div { border-right: 1px solid var(--ink); border-bottom: 1px solid var(--ink); padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 12px; }
+    .services > div.down { background: var(--ink); color: var(--paper); }
+    .services .ms { font-family: var(--mono); font-size: 11px; color: var(--mute); }
+    .services .down .ms { color: rgba(255, 255, 255, 0.7); }
+    tr.deficit td { background: var(--ink); color: var(--paper); }
+    tr.deficit .state::before { border-color: var(--paper); }
+    .stamp { font: 11px var(--mono); color: rgba(255, 255, 255, 0.7); letter-spacing: 0.04em; margin: -6px 0 14px; }
+    @media (max-width: 1100px) {
+      .kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .kpis > div:nth-child(3) { border-right: 0; }
+      .kpis > div:nth-child(-n+3) { border-bottom: 1px solid var(--rule); }
+      .c4, .c5, .c6, .c7, .c8 { grid-column: span 12; }
+    }
+    @media (max-width: 560px) { .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } .kpis .big { font-size: 30px; } }
+  </style>
+</head>
+<body data-app="dashboard">
+  <main class="page"></main>
+  <script src="/shared/app.js?v=2"></script>
+  <script src="/dashboard/dashboard.js?v=2"></script>
+</body>
+</html>

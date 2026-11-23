@@ -1,24 +1,19 @@
-output "datalake_bucket_arn" {
-  description = "ARN del bucket S3 del Data Lake"
-  value       = aws_s3_bucket.datalake.arn
-}
-
 output "datalake_bucket_name" {
-  description = "Nombre del bucket S3 del Data Lake"
+  description = "Bucket S3 del Data Lake (raw/, trusted/, quarantine/)"
   value       = aws_s3_bucket.datalake.bucket
 }
 
-output "trip_recorded_queue_url" {
-  description = "URL de la cola SQS de eventos de viaje"
-  value       = aws_sqs_queue.trip_recorded_queue.id
+output "event_bus_name" {
+  description = "Bus de eventos de dominio"
+  value       = aws_cloudwatch_event_bus.domain.name
 }
 
-output "trip_recorded_queue_arn" {
-  description = "ARN de la cola SQS de eventos de viaje"
-  value       = aws_sqs_queue.trip_recorded_queue.arn
+output "consumer_queues" {
+  description = "Colas SQS por consumidor"
+  value       = { for k, q in aws_sqs_queue.consumer : k => q.id }
 }
 
-output "lambda_analytics_ingest_arn" {
-  description = "ARN de la función Lambda de ingesta"
-  value       = aws_lambda_function.analytics_ingest.arn
+output "lambdas" {
+  description = "Lambdas desplegadas"
+  value       = [for f in aws_lambda_function.fn : f.function_name]
 }

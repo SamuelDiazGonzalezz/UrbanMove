@@ -32,6 +32,8 @@ provider "aws" {
       lambda     = var.aws_endpoint_url
       iam        = var.aws_endpoint_url
       cloudwatch = var.aws_endpoint_url
+      events     = var.aws_endpoint_url
+      sts        = var.aws_endpoint_url
     }
   }
 }

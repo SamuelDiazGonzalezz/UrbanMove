@@ -16,10 +16,11 @@ public interface SpringDataOutboxRepository extends JpaRepository<OutboxEventJpa
      */
     @Query(value = """
         SELECT o.* FROM outbox_events o
-        LEFT JOIN event_publications p ON o.id = p.event_id
-        GROUP BY o.id
-        HAVING bool_or(p.status = 'SUCCESS') IS NOT TRUE
-           AND bool_or(p.status = 'DEAD_LETTER') IS NOT TRUE
+        WHERE NOT EXISTS (
+            SELECT 1 FROM event_publications p
+            WHERE p.event_id = o.id
+              AND p.status IN ('SUCCESS', 'DEAD_LETTER')
+        )
         ORDER BY o.created_at ASC
         LIMIT :batchSize
         FOR UPDATE OF o SKIP LOCKED

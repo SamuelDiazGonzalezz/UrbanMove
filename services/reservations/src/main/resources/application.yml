@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: reservations
+  config:
+    import: classpath:urbanmove-common.yml
+
+DB_NAME: reservations_db
+
+urbanmove:
+  events:
+    queue-name: "reservations-events"
+  security:
+    public-get-paths: ""
+    public-paths: ""

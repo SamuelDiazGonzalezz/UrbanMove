@@ -1,22 +1,15 @@
--- Base de datos inicial para Fase 0 (walking skeleton)
-CREATE DATABASE zones_db;
-
--- Bases de datos para siguientes fases
+-- Una base de datos por servicio (ADR 0002) + Keycloak. Se ejecuta solo con un volumen nuevo.
 CREATE DATABASE identity_db;
 CREATE DATABASE user_profiles_db;
+CREATE DATABASE zones_db;
 CREATE DATABASE inventory_db;
 CREATE DATABASE availability_db;
+CREATE DATABASE telemetry_db;
 CREATE DATABASE reservations_db;
 CREATE DATABASE rides_db;
+CREATE DATABASE incidents_db;
+CREATE DATABASE maintenance_db;
+CREATE DATABASE relocation_db;
 CREATE DATABASE history_db;
 CREATE DATABASE analytics_db;
-
-GRANT ALL PRIVILEGES ON DATABASE zones_db TO urbanmove;
-GRANT ALL PRIVILEGES ON DATABASE identity_db TO urbanmove;
-GRANT ALL PRIVILEGES ON DATABASE user_profiles_db TO urbanmove;
-GRANT ALL PRIVILEGES ON DATABASE inventory_db TO urbanmove;
-GRANT ALL PRIVILEGES ON DATABASE availability_db TO urbanmove;
-GRANT ALL PRIVILEGES ON DATABASE reservations_db TO urbanmove;
-GRANT ALL PRIVILEGES ON DATABASE rides_db TO urbanmove;
-GRANT ALL PRIVILEGES ON DATABASE history_db TO urbanmove;
-GRANT ALL PRIVILEGES ON DATABASE analytics_db TO urbanmove;
+CREATE DATABASE keycloak_db;

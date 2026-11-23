@@ -1,0 +1,70 @@
+{
+  "realm": "urbanmove",
+  "displayName": "UrbanMove",
+  "enabled": true,
+  "sslRequired": "none",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "accessTokenLifespan": 3600,
+  "ssoSessionIdleTimeout": 28800,
+  "roles": {
+    "realm": [
+      { "name": "USER", "description": "Usuario final: reserva, viaja y reporta incidencias" },
+      { "name": "MAINTENANCE", "description": "Mantenimiento y operaciones de flota" },
+      { "name": "ADMIN", "description": "Administración y dashboard" }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "urbanmove-web",
+      "name": "UrbanMove apps",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "fullScopeAllowed": true
+    }
+  ],
+  "users": [
+    {
+      "username": "ana",
+      "enabled": true,
+      "email": "ana@urbanmove.test",
+      "emailVerified": true,
+      "firstName": "Ana",
+      "lastName": "Suárez",
+      "credentials": [{ "type": "password", "value": "urbanmove", "temporary": false }],
+      "realmRoles": ["USER"]
+    },
+    {
+      "username": "luis",
+      "enabled": true,
+      "email": "luis@urbanmove.test",
+      "emailVerified": true,
+      "firstName": "Luis",
+      "lastName": "Medina",
+      "credentials": [{ "type": "password", "value": "urbanmove", "temporary": false }],
+      "realmRoles": ["USER"]
+    },
+    {
+      "username": "operador",
+      "enabled": true,
+      "email": "operador@urbanmove.test",
+      "emailVerified": true,
+      "firstName": "Marta",
+      "lastName": "Rivero",
+      "credentials": [{ "type": "password", "value": "urbanmove", "temporary": false }],
+      "realmRoles": ["MAINTENANCE"]
+    },
+    {
+      "username": "gerencia",
+      "enabled": true,
+      "email": "gerencia@urbanmove.test",
+      "emailVerified": true,
+      "firstName": "Carlos",
+      "lastName": "Henríquez",
+      "credentials": [{ "type": "password", "value": "urbanmove", "temporary": false }],
+      "realmRoles": ["ADMIN", "MAINTENANCE"]
+    }
+  ]
+}

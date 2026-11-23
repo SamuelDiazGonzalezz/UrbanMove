@@ -21,6 +21,20 @@
     </properties>
 
     <modules>
+        <module>libs/platform-common</module>
+        <module>services/identity</module>
+        <module>services/user-profiles</module>
+        <module>services/zones</module>
+        <module>services/inventory</module>
+        <module>services/availability</module>
+        <module>services/telemetry</module>
+        <module>services/reservations</module>
+        <module>services/rides</module>
+        <module>services/incidents</module>
+        <module>services/maintenance</module>
+        <module>services/relocation</module>
+        <module>services/history</module>
+        <module>services/analytics</module>
         <module>services/core-fleet</module>
     </modules>
 

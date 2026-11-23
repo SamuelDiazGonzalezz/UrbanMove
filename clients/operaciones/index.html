@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>UrbanMove · Operaciones</title>
+  <link rel="stylesheet" href="/shared/base.css?v=2">
+  <style>
+    .cols { display: grid; grid-template-columns: 340px minmax(0, 1fr); gap: 16px; align-items: start; }
+    .cols .panel + .panel { margin-top: 0; }
+    .stack { display: flex; flex-direction: column; gap: 16px; }
+    .stack .panel + .panel { margin-top: 0; }
+    .filters { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 8px; }
+    .filters .field { margin: 0; min-width: 160px; }
+    .zones-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); border-top: 1px solid var(--ink); border-left: 1px solid var(--ink); }
+    .zones-strip > div { border-right: 1px solid var(--ink); border-bottom: 1px solid var(--ink); padding: 14px; }
+    .zones-strip .name { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; }
+    .zones-strip .big { font-size: 28px; }
+    .zones-strip .meta { font-size: 11px; color: var(--mute); margin-top: 6px; font-family: var(--mono); }
+    td .actions { flex-wrap: nowrap; }
+    dialog { border: 1px solid var(--ink); padding: 24px; width: min(440px, calc(100vw - 32px)); color: var(--ink); }
+    dialog::backdrop { background: rgba(0, 0, 0, 0.55); }
+    dialog h2 { margin: 0 0 16px; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; }
+    .check { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid var(--rule); }
+    .check input { width: auto; }
+    .flow td { font-size: 12px; }
+    a.link { color: inherit; }
+    @media (max-width: 1000px) { .cols { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body data-app="operaciones">
+  <main class="page"></main>
+  <dialog id="dialog"></dialog>
+  <script src="/shared/app.js?v=2"></script>
+  <script src="/operaciones/operaciones.js?v=2"></script>
+</body>
+</html>

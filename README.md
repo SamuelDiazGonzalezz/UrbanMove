@@ -2,9 +2,37 @@
 
 Sistema distribuido de movilidad urbana (bicicletas y patinetes eléctricos) para la asignatura **Computación en la Nube** del Grado en Ingeniería Informática (ULPGC).
 
-> **Estado:** Fase 0 (MVP en curso).
-> El repositorio incluye documentación y un esqueleto/MVP local inicial (docker-compose, infra/, services/core-fleet) para validar un flujo básico end-to-end.
-> Consulta el [manual de pruebas del MVP](docs/02-desarrollo/MANUAL-PRUEBAS-MVP.md).
+## ▶️ Cómo ejecutarlo
+
+Solo necesitas **Docker Desktop** abierto (con al menos 8 GB de RAM asignados). No hace falta
+instalar Java, Maven, Python ni Terraform.
+
+```bash
+docker compose up -d --build
+```
+
+La primera vez tarda varios minutos (compila los 13 servicios y descarga imágenes). Compose lo
+hace todo en orden: PostgreSQL, LocalStack y Keycloak → empaquetado de Lambdas → Terraform
+(bus de eventos, colas, Lambdas, S3) → microservicios y gateway. Está listo cuando
+`docker compose ps` muestra los servicios como `healthy`.
+
+Abre **http://localhost:8080** (contraseña `urbanmove` en todas las cuentas de prueba):
+
+| App | URL | Usuario |
+|---|---|---|
+| Usuario | http://localhost:8080/usuario/ | `ana` o `luis` (o regístrate) |
+| Operaciones | http://localhost:8080/operaciones/ | `operador` |
+| Dashboard | http://localhost:8080/dashboard/ | `gerencia` |
+
+Parar: `docker compose down` · Parar y borrar datos: `docker compose down -v`
+
+Demos guiadas (viaje, mantenimiento, recolocación, expiración, fallo parcial) y diferencias con
+el diseño en [PROTOTIPO-1.md](docs/02-desarrollo/PROTOTIPO-1.md).
+
+> **Estado:** Prototipo 1 (rama `prototipo1`): 13 microservicios, EventBridge + SQS, 5 Lambdas,
+> Data Lake, 7 data marts y tres interfaces (usuario, operaciones y dashboard).
+> El MVP anterior (`core-fleet`) sigue documentado en el [manual de pruebas del MVP](docs/02-desarrollo/MANUAL-PRUEBAS-MVP.md).
+
 ---
 
 ## 🎯 Objetivo

@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: identity
+  config:
+    import: classpath:urbanmove-common.yml
+
+DB_NAME: identity_db
+
+urbanmove:
+  events:
+    queue-name: ""
+  security:
+    public-get-paths: ""
+    public-paths: "/api/auth/**"

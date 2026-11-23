@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: inventory
+  config:
+    import: classpath:urbanmove-common.yml
+
+DB_NAME: inventory_db
+
+urbanmove:
+  events:
+    queue-name: ""
+  security:
+    public-get-paths: ""
+    public-paths: ""

@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>UrbanMove</title>
+  <link rel="stylesheet" href="/shared/base.css?v=2">
+  <style>
+    .entries { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; border: 1px solid var(--paper); }
+    .entries a {
+      display: flex; flex-direction: column; justify-content: space-between; min-height: 220px; padding: 24px;
+      color: var(--paper); text-decoration: none; border-right: 1px solid var(--paper);
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+    .entries a:last-child { border-right: 0; }
+    .entries a:hover { background: var(--paper); color: var(--ink); }
+    .entries .n { font-family: var(--mono); font-size: 12px; }
+    .entries h2 { font-weight: 400; font-size: 26px; letter-spacing: -0.01em; margin: 0 0 8px; }
+    .entries p { margin: 0; font-size: 13px; opacity: 0.75; max-width: 30ch; }
+    .home { min-height: calc(100vh - 80px); display: flex; flex-direction: column; justify-content: flex-end; padding: 0 var(--gutter) var(--gutter); }
+    .home .headline { max-width: 16ch; }
+    footer { display: flex; justify-content: space-between; gap: 16px; margin-top: 20px; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.6; }
+    @media (max-width: 760px) {
+      .entries { grid-template-columns: 1fr; }
+      .entries a { border-right: 0; border-bottom: 1px solid var(--paper); min-height: 150px; }
+      .entries a:last-child { border-bottom: 0; }
+    }
+  </style>
+</head>
+<body data-app="home">
+  <div class="backdrop"><video src="/shared/bg.mp4" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video></div>
+  <header class="topbar"><span class="wordmark">UrbanMove<small>Las Palmas de Gran Canaria</small></span></header>
+  <main class="home">
+    <h1 class="headline">Bicicletas y patinetes compartidos.</h1>
+    <nav class="entries" aria-label="Aplicaciones">
+      <a href="/usuario/"><span class="n">01</span><div><h2>Usuario</h2><p>Encuentra un vehículo, resérvalo, viaja y consulta tu historial.</p></div></a>
+      <a href="/operaciones/"><span class="n">02</span><div><h2>Operaciones</h2><p>Flota, mantenimiento, incidencias, telemetría y recolocación.</p></div></a>
+      <a href="/dashboard/"><span class="n">03</span><div><h2>Dashboard</h2><p>Indicadores de flota, demanda, viajes y salud del sistema.</p></div></a>
+    </nav>
+    <footer><span>Prototipo 1</span><span>Microservicios · EventBridge · Lambda · Data Lake</span></footer>
+  </main>
+</body>
+</html>

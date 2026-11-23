@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: availability
+  config:
+    import: classpath:urbanmove-common.yml
+
+DB_NAME: availability_db
+
+urbanmove:
+  events:
+    queue-name: "availability-events"
+  security:
+    public-get-paths: "/api/availability/**"
+    public-paths: ""

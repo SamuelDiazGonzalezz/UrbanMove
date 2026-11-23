@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: rides
+  config:
+    import: classpath:urbanmove-common.yml
+
+DB_NAME: rides_db
+
+urbanmove:
+  events:
+    queue-name: "rides-events"
+  security:
+    public-get-paths: ""
+    public-paths: ""

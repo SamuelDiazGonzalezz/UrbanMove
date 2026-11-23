@@ -24,11 +24,12 @@ public class OutboxHealthIndicator implements HealthIndicator {
         try {
             Long totalOutbox = jdbcTemplate.queryForObject("SELECT count(*) FROM outbox_events", Long.class);
             Long pendingCount = jdbcTemplate.queryForObject("""
-                SELECT count(DISTINCT o.id) FROM outbox_events o
-                LEFT JOIN event_publications p ON o.id = p.event_id
-                GROUP BY o.id
-                HAVING bool_or(p.status = 'SUCCESS') IS NOT TRUE 
-                   AND bool_or(p.status = 'DEAD_LETTER') IS NOT TRUE
+                SELECT count(*) FROM outbox_events o
+                WHERE NOT EXISTS (
+                    SELECT 1 FROM event_publications p
+                    WHERE p.event_id = o.id
+                      AND p.status IN ('SUCCESS', 'DEAD_LETTER')
+                )
                 """, Long.class);
             Long deadLetterCount = jdbcTemplate.queryForObject(
                     "SELECT count(*) FROM event_publications WHERE status = 'DEAD_LETTER'", Long.class);

@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: relocation
+  config:
+    import: classpath:urbanmove-common.yml
+
+DB_NAME: relocation_db
+
+urbanmove:
+  events:
+    queue-name: "relocation-events"
+  security:
+    public-get-paths: ""
+    public-paths: ""

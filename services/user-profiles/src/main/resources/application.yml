@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: user-profiles
+  config:
+    import: classpath:urbanmove-common.yml
+
+DB_NAME: user_profiles_db
+
+urbanmove:
+  events:
+    queue-name: "user-profiles-events"
+  security:
+    public-get-paths: ""
+    public-paths: ""

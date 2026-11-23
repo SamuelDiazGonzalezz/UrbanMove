@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: zones
+  config:
+    import: classpath:urbanmove-common.yml
+
+DB_NAME: zones_db
+
+urbanmove:
+  events:
+    queue-name: ""
+  security:
+    public-get-paths: "/api/zones/**"
+    public-paths: ""
