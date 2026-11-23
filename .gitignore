@@ -50,6 +50,7 @@ venv/
 *.tfstate.*
 *.tfplan
 *.tfvars
+!infra/terraform/environments/*.tfvars
 !*.tfvars.example
 crash.log
 override.tf
