@@ -53,7 +53,7 @@ locals {
 }
 
 locals {
-  lambda_zip = { for k, v in local.lambdas : k => "${path.module}/../lambdas/build/${v.dir}.zip" }
+  lambda_zip = { for k, v in local.lambdas : k => "${path.module}/${var.lambda_build_dir}/${v.dir}.zip" }
 }
 
 resource "aws_iam_role" "lambda_exec_role" {
@@ -66,6 +66,52 @@ resource "aws_iam_role" "lambda_exec_role" {
       Effect    = "Allow"
       Principal = { Service = "lambda.amazonaws.com" }
     }]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_basic_execution" {
+  role       = aws_iam_role.lambda_exec_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
+resource "aws_iam_role_policy" "lambda_urbanmove_permissions" {
+  name = "urbanmove-lambda-cloud-permissions"
+  role = aws_iam_role.lambda_exec_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "sqs:ReceiveMessage",
+          "sqs:DeleteMessage",
+          "sqs:GetQueueAttributes"
+        ]
+        Resource = [for q in aws_sqs_queue.consumer : q.arn]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:PutObject",
+          "s3:GetObject",
+          "s3:ListBucket"
+        ]
+        Resource = [
+          aws_s3_bucket.datalake.arn,
+          "${aws_s3_bucket.datalake.arn}/*"
+        ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "events:PutEvents"
+        ]
+        Resource = [
+          aws_cloudwatch_event_bus.domain.arn
+        ]
+      }
+    ]
   })
 }
 
@@ -84,11 +130,7 @@ resource "aws_lambda_function" "fn" {
     variables = local.lambda_env
   }
 
-  tags = {
-    Environment = var.environment
-    Project     = "UrbanMove"
-    ManagedBy   = "Terraform"
-  }
+  # tags se heredan automáticamente mediante default_tags en el provider aws
 }
 
 resource "aws_lambda_event_source_mapping" "fn" {

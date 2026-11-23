@@ -18,15 +18,15 @@ variable "is_localstack" {
 
 variable "aws_access_key" {
   type        = string
-  description = "AWS Access Key"
-  default     = "test"
+  description = "AWS Access Key (usado en LocalStack o dev)"
+  default     = null
   sensitive   = true
 }
 
 variable "aws_secret_key" {
   type        = string
-  description = "AWS Secret Key"
-  default     = "test"
+  description = "AWS Secret Key (usado en LocalStack o dev)"
+  default     = null
   sensitive   = true
 }
 
@@ -76,4 +76,10 @@ variable "demand_min_events" {
   type        = number
   description = "Regla de recolocación: hay déficit si la demanda de la última hora (reservas, intentos rechazados y viajes iniciados) es MAYOR que esto. El enunciado propone 10; se baja para la demo"
   default     = 4
+}
+
+variable "lambda_build_dir" {
+  type        = string
+  description = "Ruta al directorio de artefactos comprimidos .zip de las Lambdas"
+  default     = "../lambdas/build"
 }

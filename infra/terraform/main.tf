@@ -11,12 +11,21 @@ terraform {
       version = "~> 2.4"
     }
   }
+
+  # Descomentar y configurar para migración a AWS real con estado remoto seguro:
+  # backend "s3" {
+  #   bucket         = "urbanmove-tfstate-<account-id>"
+  #   key            = "environments/dev/terraform.tfstate"
+  #   region         = "eu-west-1"
+  #   dynamodb_table = "urbanmove-tflocks"
+  #   encrypt        = true
+  # }
 }
 
 provider "aws" {
   region                      = var.aws_region
-  access_key                  = var.aws_access_key
-  secret_key                  = var.aws_secret_key
+  access_key                  = var.is_localstack ? var.aws_access_key : null
+  secret_key                  = var.is_localstack ? var.aws_secret_key : null
   skip_credentials_validation = var.is_localstack
   skip_metadata_api_check     = var.is_localstack
   skip_requesting_account_id  = var.is_localstack
@@ -34,6 +43,14 @@ provider "aws" {
       cloudwatch = var.aws_endpoint_url
       events     = var.aws_endpoint_url
       sts        = var.aws_endpoint_url
+    }
+  }
+
+  default_tags {
+    tags = {
+      Environment = var.environment
+      Project     = "UrbanMove"
+      ManagedBy   = "Terraform"
     }
   }
 }

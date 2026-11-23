@@ -1,12 +1,6 @@
 resource "aws_s3_bucket" "datalake" {
   bucket        = var.datalake_bucket_name
-  force_destroy = true
-
-  tags = {
-    Environment = var.environment
-    Project     = "UrbanMove"
-    ManagedBy   = "Terraform"
-  }
+  force_destroy = var.is_localstack
 }
 
 resource "aws_s3_bucket_versioning" "datalake_versioning" {
@@ -15,4 +9,23 @@ resource "aws_s3_bucket_versioning" "datalake_versioning" {
   versioning_configuration {
     status = "Enabled"
   }
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "datalake_encryption" {
+  bucket = aws_s3_bucket.datalake.id
+
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
+}
+
+resource "aws_s3_bucket_public_access_block" "datalake_public_access_block" {
+  bucket = aws_s3_bucket.datalake.id
+
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
 }
