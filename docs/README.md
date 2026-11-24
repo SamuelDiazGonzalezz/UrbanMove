@@ -1,7 +1,8 @@
 # Documentación de UrbanMove
 
-> **Esta carpeta es la fuente de verdad del diseño.** El repositorio no contiene código
-> todavía: primero se valida el plan y después se implementa la Fase 0.
+> **Esta carpeta es la fuente de verdad del diseño.** La arquitectura vigente es el
+> **Prototipo 1** (13 microservicios + 5 Lambdas), no el monolito `core-fleet` de la Fase 0.
+> La hoja de ruta operativa es [DEUDA-Y-ROADMAP-2026-11-24.md](00-gestion/DEUDA-Y-ROADMAP-2026-11-24.md).
 > **Última reestructuración:** noviembre de 2026.
 
 ---
@@ -12,8 +13,9 @@
 docs/
 ├── README.md                     este índice
 ├── 00-gestion/
-│   ├── ACTION-PLAN.md            qué se hace cada semana, en orden
-│   ├── ESTADO-Y-PENDIENTES-2026-11-21.md  situación del MVP y deuda técnica
+│   ├── ACTION-PLAN.md            plan histórico de la Fase 0 (no vigente)
+│   ├── DEUDA-Y-ROADMAP-2026-11-24.md  hoja de ruta vigente y deuda técnica
+│   ├── ESTADO-Y-PENDIENTES-2026-11-21.md  situación del MVP de Fase 0 (histórico)
 │   ├── GITHUB-WORKFLOW.md        uso mínimo de issues y etiquetas
 │   ├── KICKOFF.md                reunión de arranque: decisiones, reparto y acta
 │   ├── KICKOFF.pdf               copia para imprimir
@@ -28,15 +30,20 @@ docs/
 │   ├── OLTP-OLAP.md              cargas transaccional y analítica, local y AWS
 │   ├── SERVICE-CLASSIFICATION.md qué servicio es OLTP y cuál OLAP
 │   ├── SERVICE-ROADMAP.md        orden, dependencias y recortes de servicios
-│   └── adr/                      decisiones arquitectónicas (0001-0007)
+│   └── adr/                      decisiones arquitectónicas (0001-0013)
 ├── 02-desarrollo/
+│   ├── PROTOTIPO-1.md            qué hay implementado en la arquitectura vigente
+│   ├── BITACORA-PROTOTIPO-1.md   qué se hizo y cuándo
+│   ├── egm-implementation-readiness-report.md  auditoría de calidad y madurez
 │   ├── LOCAL-DEV.md              herramientas, versiones y arranque local
-│   ├── MANUAL-PRUEBAS-MVP.md     manual de usuario y pruebas del MVP local
+│   ├── MANUAL-PRUEBAS-MVP.md     manual de usuario y pruebas del MVP de Fase 0 (histórico)
 │   ├── CODE-STANDARDS.md         nomenclatura, legibilidad, SOLID e inmutabilidad
 │   ├── TESTING.md                pirámide, Testcontainers y contratos
 │   └── CONTAINERS.md             Dockerfile, JVM, probes y Compose
 ├── 03-operacion/
-│   └── CI-CD.md                  pipelines, quality gates y secretos
+│   ├── CI-CD.md                  pipelines, quality gates y secretos
+│   ├── AWS-MIGRATION-GUIDE.md    migración de LocalStack a AWS real
+│   └── TERRAFORM-FULL.md         plataforma completa como código (VPC, RDS, ECS, CD)
 └── 04-enunciado/
     └── urbanmove.pdf             enunciado original
 ```
@@ -51,8 +58,14 @@ cualquier explorador de archivos. Los nombres de documento se mantienen en mayú
 
 | Documento | Para qué sirve | Cuándo se lee |
 |---|---|---|
-| [ACTION-PLAN.md](00-gestion/ACTION-PLAN.md) | Qué se hace cada semana, en qué orden y qué entregable lo cierra | Al empezar la semana |
-| [ESTADO-Y-PENDIENTES-2026-11-21.md](00-gestion/ESTADO-Y-PENDIENTES-2026-11-21.md) | Qué está verificado, qué deuda queda y por dónde seguir | Al retomar el proyecto |
+| [DEUDA-Y-ROADMAP-2026-11-24.md](00-gestion/DEUDA-Y-ROADMAP-2026-11-24.md) | Deuda técnica vigente, prioridades y PRs ejecutables | Al retomar el proyecto o planificar |
+| [PROTOTIPO-1.md](02-desarrollo/PROTOTIPO-1.md) | Qué hay implementado: servicios, eventos, Lambdas, interfaces | Antes de tocar código |
+| [BITACORA-PROTOTIPO-1.md](02-desarrollo/BITACORA-PROTOTIPO-1.md) | Qué se hizo, cuándo y con qué verificación | Al retomar el trabajo |
+| [egm-implementation-readiness-report.md](02-desarrollo/egm-implementation-readiness-report.md) | Auditoría de calidad, bloqueantes y hoja de remediación | Al revisar madurez y riesgos |
+| [TERRAFORM-FULL.md](03-operacion/TERRAFORM-FULL.md) | Plan para llevar toda la plataforma a Terraform y AWS | Antes de tocar infraestructura |
+| [AWS-MIGRATION-GUIDE.md](03-operacion/AWS-MIGRATION-GUIDE.md) | Paso de LocalStack a AWS real con el Terraform actual | Antes de desplegar |
+| [ACTION-PLAN.md](00-gestion/ACTION-PLAN.md) | Plan histórico de la Fase 0 (no vigente) | Solo como contexto |
+| [ESTADO-Y-PENDIENTES-2026-11-21.md](00-gestion/ESTADO-Y-PENDIENTES-2026-11-21.md) | Estado del MVP `core-fleet` de Fase 0 (histórico) | Solo como contexto |
 | [GITHUB-WORKFLOW.md](00-gestion/GITHUB-WORKFLOW.md) | Cuándo abrir una issue, etiquetas mínimas y comandos `gh` | Antes de crear la primera tarea |
 | [KICKOFF.md](00-gestion/KICKOFF.md) | Cerrar decisiones, reparto y plan de la semana 1 | Antes y durante la primera reunión |
 | [PLAN.md](00-gestion/PLAN.md) | Alcance, fases, reparto, riesgos y demo | Al empezar y al planificar cada fase |
@@ -71,6 +84,7 @@ cualquier explorador de archivos. Los nombres de documento se mantienen en mayú
 | [TESTING.md](02-desarrollo/TESTING.md) | Qué se prueba, con qué y con qué umbral | Antes de escribir el primer test |
 | [CONTAINERS.md](02-desarrollo/CONTAINERS.md) | Cómo se empaqueta y se ejecuta un servicio | Antes de crear el primer Dockerfile |
 | [CI-CD.md](03-operacion/CI-CD.md) | Pipelines, gates y gestión de secretos | Antes de configurar GitHub Actions |
+| [TERRAFORM-FULL.md](03-operacion/TERRAFORM-FULL.md) | Plan de IaC completa: VPC, RDS, ECR, ECS, ALB, Lambdas y CD | Antes de tocar infraestructura |
 | [ADRs](01-arquitectura/adr/) | Por qué se tomó cada decisión | Al dudar de una decisión existente |
 | [Enunciado](04-enunciado/urbanmove.pdf) | Requisitos originales de la asignatura | Al validar alcance y rúbrica |
 
@@ -80,9 +94,9 @@ cualquier explorador de archivos. Los nombres de documento se mantienen en mayú
 
 ### 3.1. Si acabas de entrar en el equipo
 
-1. [KICKOFF.md](00-gestion/KICKOFF.md) — contexto, decisiones y reparto.
-2. [ACTION-PLAN.md](00-gestion/ACTION-PLAN.md) — qué toca esta semana y en qué orden.
-3. [PLAN.md](00-gestion/PLAN.md) — alcance, fases y rúbrica.
+1. [DEUDA-Y-ROADMAP-2026-11-24.md](00-gestion/DEUDA-Y-ROADMAP-2026-11-24.md) — estado real y qué toca ahora.
+2. [PROTOTIPO-1.md](02-desarrollo/PROTOTIPO-1.md) — qué hay implementado.
+3. [KICKOFF.md](00-gestion/KICKOFF.md) — contexto, decisiones y reparto.
 4. [ARCHITECTURE.md](01-arquitectura/ARCHITECTURE.md) — cómo encajan los servicios.
 5. [LOCAL-DEV.md](02-desarrollo/LOCAL-DEV.md) — cómo levantar el entorno.
 
@@ -105,8 +119,10 @@ cualquier explorador de archivos. Los nombres de documento se mantienen en mayú
 
 ### 3.4. Antes de desplegar
 
-1. [CI-CD.md](03-operacion/CI-CD.md).
-2. [CONTAINERS.md](02-desarrollo/CONTAINERS.md), sección de despliegue.
+1. [TERRAFORM-FULL.md](03-operacion/TERRAFORM-FULL.md).
+2. [AWS-MIGRATION-GUIDE.md](03-operacion/AWS-MIGRATION-GUIDE.md).
+3. [CI-CD.md](03-operacion/CI-CD.md).
+4. [CONTAINERS.md](02-desarrollo/CONTAINERS.md), sección de despliegue.
 
 ### 3.5. Antes de planificar la semana
 
@@ -155,8 +171,8 @@ La guía detallada está en [KICKOFF.md](00-gestion/KICKOFF.md), sección 2.
 ### 4.4. Enlaces
 
 - Siempre relativos al documento que los contiene (por ejemplo, desde `00-gestion/ACTION-PLAN.md`):
-  - dentro de la misma carpeta: `[PLAN.md](PLAN.md)`;
-  - a otra carpeta: `[EVENTS.md](../01-arquitectura/EVENTS.md)`.
+  - dentro de la misma carpeta: `PLAN.md`;
+  - a otra carpeta: `../01-arquitectura/EVENTS.md`.
 - Nunca enlaces absolutos a `github.com` para documentos del propio repositorio.
 - Si se mueve un documento, se actualizan **todos** los enlaces y se comprueba que
   resuelven antes del PR.
@@ -226,6 +242,12 @@ que regenere el PDF.
 ## 7. Enlaces rápidos
 
 - [README del repositorio](../README.md)
+- [Deuda y hoja de ruta vigente](00-gestion/DEUDA-Y-ROADMAP-2026-11-24.md)
+- [Prototipo 1](02-desarrollo/PROTOTIPO-1.md)
+- [Bitácora del Prototipo 1](02-desarrollo/BITACORA-PROTOTIPO-1.md)
+- [Informe EGM](02-desarrollo/egm-implementation-readiness-report.md)
+- [Terraform full](03-operacion/TERRAFORM-FULL.md)
+- [Guía de migración a AWS](03-operacion/AWS-MIGRATION-GUIDE.md)
 - [Flujo de trabajo en GitHub](00-gestion/GITHUB-WORKFLOW.md)
 - [Plan de acción](00-gestion/ACTION-PLAN.md)
 - [Estado y pendientes (2026-11-21)](00-gestion/ESTADO-Y-PENDIENTES-2026-11-21.md)

@@ -109,7 +109,7 @@ Para evitar retrabajos cuando toque desplegar en la nube de Amazon Web Services,
 - **Pipeline de CI Paralelo (`.github/workflows/ci.yml`)**:
   - Incorporado el job `terraform` que compila las Lambdas en Python 3.11, corre `terraform fmt -check`, `terraform init`, `terraform validate` y `terraform plan` contra el perfil de desarrollo.
 - **Guía de Migración Cloud**:
-  - Publicada la guía completa paso a paso en [`docs/03-operaciones/AWS-MIGRATION-GUIDE.md`](../03-operaciones/AWS-MIGRATION-GUIDE.md).
+  - Publicada la guía completa paso a paso en [`docs/03-operacion/AWS-MIGRATION-GUIDE.md`](../03-operacion/AWS-MIGRATION-GUIDE.md).
 - **Commit y Push:**
   - Commit `bee06ba`: `feat(infra): prepare Terraform and CI for seamless AWS migration and add validation pipeline`
   - Push exitoso a `origin/prototipo1`.

@@ -2,7 +2,7 @@
 
 | Campo       | Valor                          |
 |-------------|--------------------------------|
-| **Estado**  | Aceptado                       |
+| **Estado**  | Sustituido por [ADR 0013](0013-prototipo1-sustituye-core-fleet.md) |
 | **Fecha**   | 2026-11-16                     |
 | **Autores** | Equipo UrbanMove               |
 | **Fase**    | Fase 0 — MVP                   |

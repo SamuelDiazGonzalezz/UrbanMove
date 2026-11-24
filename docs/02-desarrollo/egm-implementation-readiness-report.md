@@ -1,6 +1,6 @@
 # Informe de Auditoría EGM: Implementation Readiness & Code Quality (PROTOTIPO-1)
 
-> **Documento auditado:** [`docs/02-desarrollo/PROTOTIPO-1.md`](docs/02-desarrollo/PROTOTIPO-1.md) y base de código en rama `prototipo1` (`7b5f3c3` / `6640e55`).  
+> **Documento auditado:** [`docs/02-desarrollo/PROTOTIPO-1.md`](PROTOTIPO-1.md) y base de código en rama `prototipo1` (`7b5f3c3` / `6640e55`).  
 > **Protocolo:** EGM Goldfish Review Protocol (`egm-implementation-readiness`, `egm-codebase-details`).  
 > **Fecha:** 2026-11-23.  
 > **Veredicto:** **REQUIERE ACCIÓN (NO APTO PARA PRODUCCIÓN SIN REMEDIACIÓN)**.
@@ -11,7 +11,7 @@
 
 El prototipo actual (`prototipo1`) es un logro importante como **prueba de concepto funcional e integrada de extremo a extremo** (Docker Compose, LocalStack, Keycloak, 13 microservicios compilando, Lambdas y tres interfaces web operativas).
 
-Sin embargo, desde la perspectiva de **calidad de código, estándares de arquitectura del proyecto ([`AGENTS.md`](AGENTS.md)), principios SOLID, Ley de Deméter y cobertura de pruebas**, la base de código presenta una deuda técnica severa:
+Sin embargo, desde la perspectiva de **calidad de código, estándares de arquitectura del proyecto ([`AGENTS.md`](../../AGENTS.md)), principios SOLID, Ley de Deméter y cobertura de pruebas**, la base de código presenta una deuda técnica severa:
 
 1. **0% de Cobertura de Pruebas en los 13 nuevos microservicios**: Ninguno de los 13 servicios bajo `services/*` cuenta con pruebas unitarias o de integración (`src/test` no existe o está vacío); las únicas pruebas existentes pertenecen al monolito original `core-fleet`.
 2. **Antipatrón de Servicio Procedural Monolítico (Violación de Arquitectura Hexagonal y SRP)**: Cada microservicio consta de un único `Controller` y una única clase `Service` masiva con SQL crudo concatenado en `JdbcTemplate`, manejando a la vez lógica de dominio, persistencia, parsing JSON e I/O sin entidades de dominio, puertos ni adaptadores.

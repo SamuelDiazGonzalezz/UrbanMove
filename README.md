@@ -7,6 +7,11 @@ Sistema distribuido de movilidad urbana (bicicletas y patinetes eléctricos) par
 Solo necesitas **Docker Desktop** abierto (con al menos 8 GB de RAM asignados). No hace falta
 instalar Java, Maven, Python ni Terraform.
 
+> **Estado (2026-11-24):** la arquitectura vigente es el **Prototipo 1** (13 microservicios +
+> 5 Lambdas); `core-fleet` queda como legado. Deuda y próximos pasos en
+> [DEUDA-Y-ROADMAP-2026-11-24.md](docs/00-gestion/DEUDA-Y-ROADMAP-2026-11-24.md) y plan de
+> plataforma completa en [TERRAFORM-FULL.md](docs/03-operacion/TERRAFORM-FULL.md).
+
 ```bash
 docker compose up -d --build
 ```

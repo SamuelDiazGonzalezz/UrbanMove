@@ -1,6 +1,6 @@
 # Guía de Migración Cloud: LocalStack a AWS Real
 
-> **Documento:** `docs/03-operaciones/AWS-MIGRATION-GUIDE.md`  
+> **Documento:** `docs/03-operacion/AWS-MIGRATION-GUIDE.md`  
 > **Área:** Infraestructura como Código (IaC), DevOps y Despliegue Cloud  
 > **Estado:** Preparado para transición sin fricción desde el entorno local
 
