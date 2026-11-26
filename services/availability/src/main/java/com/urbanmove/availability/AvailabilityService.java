@@ -37,6 +37,12 @@ public class AvailabilityService implements EventHandler {
     public record Vehicle(String vehicleId, String code, String vehicleType, String state, String zoneId,
                           Double latitude, Double longitude, Integer batteryPct, String reservationId,
                           String userId, int version, Instant updatedAt) {
+
+        /** Proyección pública que oculta datos personales de reserva/uso para clientes no staff. */
+        public Vehicle toPublicView() {
+            return new Vehicle(vehicleId, code, vehicleType, state, zoneId,
+                    latitude, longitude, batteryPct, null, null, version, updatedAt);
+        }
     }
 
     record ZoneRef(String zoneId, String name, double latitude, double longitude) {

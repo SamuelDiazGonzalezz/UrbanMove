@@ -38,10 +38,6 @@ public class AvailabilityController {
 
     /** La consulta es pública: solo el personal ve quién tiene reservado o en uso un vehículo. */
     private static AvailabilityService.Vehicle visible(AvailabilityService.Vehicle v) {
-        if (CurrentUser.isStaff()) {
-            return v;
-        }
-        return new AvailabilityService.Vehicle(v.vehicleId(), v.code(), v.vehicleType(), v.state(), v.zoneId(),
-                v.latitude(), v.longitude(), v.batteryPct(), null, null, v.version(), v.updatedAt());
+        return CurrentUser.isStaff() ? v : v.toPublicView();
     }
 }
