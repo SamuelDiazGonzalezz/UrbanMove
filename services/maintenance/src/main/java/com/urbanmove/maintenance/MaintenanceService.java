@@ -30,9 +30,16 @@ public class MaintenanceService {
 
     public MaintenanceService(JdbcTemplate jdbc, EventStore events, RestClient.Builder builder,
                               @Value("${MAINTENANCE_USAGE_LIMIT:10}") int usageLimit) {
+        this(jdbc, events, builder, usageLimit, "http://availability:8080");
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public MaintenanceService(JdbcTemplate jdbc, EventStore events, RestClient.Builder builder,
+                              @Value("${MAINTENANCE_USAGE_LIMIT:10}") int usageLimit,
+                              @Value("${AVAILABILITY_URL:http://availability:8080}") String availabilityUrl) {
         this.jdbc = jdbc;
         this.events = events;
-        this.availability = builder.baseUrl("http://availability:8080").build();
+        this.availability = builder.baseUrl(availabilityUrl).build();
         this.usageLimit = usageLimit;
     }
 

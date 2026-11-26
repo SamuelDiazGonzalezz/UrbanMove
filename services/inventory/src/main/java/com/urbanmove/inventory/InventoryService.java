@@ -4,6 +4,8 @@ import com.urbanmove.common.events.EventStore;
 import com.urbanmove.common.web.ApiException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.core.ParameterizedTypeReference;
@@ -43,9 +45,15 @@ public class InventoryService implements ApplicationRunner {
     private final Random random = new Random(42);
 
     public InventoryService(JdbcTemplate jdbc, EventStore events, RestClient.Builder builder, TransactionTemplate tx) {
+        this(jdbc, events, builder, tx, "http://zones:8080");
+    }
+
+    @Autowired
+    public InventoryService(JdbcTemplate jdbc, EventStore events, RestClient.Builder builder, TransactionTemplate tx,
+                            @Value("${ZONES_URL:http://zones:8080}") String zonesUrl) {
         this.jdbc = jdbc;
         this.events = events;
-        this.zonesClient = builder.baseUrl("http://zones:8080").build();
+        this.zonesClient = builder.baseUrl(zonesUrl).build();
         this.tx = tx;
     }
 
